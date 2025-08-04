@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/altar-logo.svg" alt="Altar Protocol Logo" width="200"/>
+  <img src="assets/altar-logo.svg" alt="Altar Protocol Logo" width="100%"/>
 </p>
 
 <h1 align="center">ALTAR Protocol</h1>
