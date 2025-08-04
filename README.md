@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+    <a href="https://hex.pm/packages/altar"><img src="https://img.shields.io/hexpm/v/altar.svg?style=flat-square" alt="Hex.pm Version"></a>
     <a href=".kiro/specs/altar-protocol/design.md"><img src="https://img.shields.io/badge/spec-v1.0.0-blue" alt="Spec Version"></a>
     <a href="docs/20250803_kiroSpecFinished_NextSteps.md"><img src="https://img.shields.io/badge/status-ready%20for%20implementation-green" alt="Status"></a>
     <a href=".kiro/specs/altar-protocol/design.md"><img src="https://img.shields.io/badge/compliance-levels%201,2,3-brightgreen" alt="Compliance"></a>
@@ -95,6 +96,24 @@ graph LR
 The design has been finalized, incorporating extensive feedback on security, developer experience, and enterprise requirements. The next phase is to build the reference implementations of the Host and Runtimes.
 
 For full details on the final review, see [docs/20250803_kiroSpecFinished_NextSteps.md](docs/20250803_kiroSpecFinished_NextSteps.md).
+
+## Implementation Vision: The Elixir Host
+
+The Altar protocol will be brought to life through a **Canonical Elixir Host** and a series of **Lightweight Runtime SDKs** for other languages. This "hub and spoke" model is a deliberate architectural choice that plays to the strengths of each technology.
+
+#### 1. The Canonical Host (This Repository)
+
+The Altar Host is the complex orchestration engine responsible for session management, security, and message routing. Given these requirements, the canonical implementation of the Host is built in **Elixir**.
+
+The BEAM and OTP provide the perfect foundation for this work, offering the world-class concurrency, fault-tolerance, and scalability required for a robust central orchestrator.
+
+For Elixir developers, the Host is a simple library to be included in any application. You can get an enterprise-grade tool bridge running inside your existing Elixir application by adding `Altar.Supervisor` to your supervision tree.
+
+#### 2. Lightweight Runtime SDKs
+
+For every other language (Python, Go, TypeScript, etc.), the goal is to provide a simple, idiomatic **Runtime SDK**. A developer wanting to expose their tools will only need to `pip install altar-runtime`, add a decorator to their functions, and point it at the central Elixir Host.
+
+This strategy simplifies development and ensures that the core security and orchestration logic remains consistent and robust for the entire ecosystem.
 
 ## Documentation
 
