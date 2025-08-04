@@ -95,7 +95,7 @@ graph LR
 
 The design has been finalized, incorporating extensive feedback on security, developer experience, and enterprise requirements. The next phase is to build the reference implementations of the Host and Runtimes.
 
-For full details on the final review, see [docs/20250803_kiroSpecFinished_NextSteps.md](docs/20250803_kiroSpecFinished_NextSteps.md).
+For full details on the final review, see [the final review document](priv/docs/20250803_kiroSpecFinished_NextSteps.md).
 
 ## Implementation Vision: The Elixir Host
 
@@ -117,14 +117,14 @@ This strategy simplifies development and ensures that the core security and orch
 
 ## Documentation
 
+The complete protocol specification can be found in the `priv/docs` directory.
+
+*   **[Design Document](priv/docs/specs/altar-protocol/design.md)**: The core architecture, message schemas (IDL), and security model.
+*   **[Requirements Document](priv/docs/specs/altar-protocol/requirements.md)**: The detailed requirements and acceptance criteria.
+*   **[Implementation Plan](priv/docs/specs/altar-protocol/tasks.md)**: The task-by-task plan for building the reference implementation.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-The complete protocol specification can be found in the `.kiro/specs/altar-protocol` directory.
-
-*   **[Design Document](.kiro/specs/altar-protocol/design.md)**: The core architecture, message schemas (IDL), and security model.
-*   **[Requirements Document](.kiro/specs/altar-protocol/requirements.md)**: The detailed requirements and acceptance criteria.
-*   **[Implementation Plan](.kiro/specs/altar-protocol/tasks.md)**: The task-by-task plan for building the reference implementation.
 
 ---

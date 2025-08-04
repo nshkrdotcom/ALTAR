@@ -1,0 +1,25 @@
+<svg width="400" height="120" viewBox="0 0 400 120" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <title>Altar Protocol Logo - Convergent 'A' Design</title>
+  
+  <defs>
+    <linearGradient id="flow-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#38bdf8;"/>
+      <stop offset="100%" style="stop-color:#34d399;"/>
+    </linearGradient>
+  </defs>
+
+  <g id="icon" transform="translate(60, 60)">
+    <path d="M -42 50 L 0 -50 L 0 -35 L -29.5 50 Z" fill="url(#flow-gradient)" />
+    <path d="M 42 50 L 0 -50 L 0 -35 L 29.5 50 Z" fill="url(#flow-gradient)" />
+    <path d="M -22 12 L 22 12 L 0 42 Z" fill="#4338ca" />
+  </g>
+
+  <g id="wordmark" transform="translate(140, 48)">
+    <text x="0" y="0" font-size="42" font-weight="bold" fill="#1e293b">
+      ALTAR
+    </text>
+    <text x="0" y="30" font-size="14" font-weight="normal" fill="#64748b" letter-spacing="0.5">
+      Agent &amp; Tool Arbitration Protocol
+    </text>
+  </g>
+</svg>
