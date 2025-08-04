@@ -1,7 +1,3 @@
-Of course. Here is the first official draft of the Altar Protocol Specification, incorporating the vision, requirements, and critical feedback previously discussed.
-
----
-
 ### **Altar Protocol Specification**
 **Version:** 1.0.0 (DRAFT)
 **Status:** DRAFT
