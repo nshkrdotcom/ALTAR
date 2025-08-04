@@ -95,7 +95,7 @@ graph LR
 
 The design has been finalized, incorporating extensive feedback on security, developer experience, and enterprise requirements. The next phase is to build the reference implementations of the Host and Runtimes.
 
-For full details on the final review, see [the final review document](priv/docs/20250803_kiroSpecFinished_NextSteps.md).
+For full details, see the [final spec draft](priv/docs/202507803_ALTAR_spec_draft.md) and the [final review document](priv/docs/20250803_kiroSpecFinished_NextSteps.md).
 
 ## Implementation Vision: The Elixir Host
 
