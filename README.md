@@ -117,6 +117,10 @@ This strategy simplifies development and ensures that the core security and orch
 
 ## Documentation
 
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
 The complete protocol specification can be found in the `.kiro/specs/altar-protocol` directory.
 
 *   **[Design Document](.kiro/specs/altar-protocol/design.md)**: The core architecture, message schemas (IDL), and security model.
