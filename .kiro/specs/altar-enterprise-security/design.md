@@ -59,6 +59,8 @@ graph TB
             AM[Audit Manager]
             TM[Tenant Manager]
             CM[Cost Manager]
+            GM[Governance Manager]
+            IM[Identity Manager]
             
             style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
             style SM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
@@ -67,6 +69,8 @@ graph TB
             style AM fill:#059669,stroke:#047857,color:#ffffff
             style TM fill:#7c3aed,stroke:#6d28d9,color:#ffffff
             style CM fill:#f59e0b,stroke:#d97706,color:#ffffff
+            style GM fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+            style IM fill:#06b6d4,stroke:#0891b2,color:#ffffff
         end
         
         subgraph "Enterprise Identity Layer"
@@ -126,6 +130,8 @@ graph TB
     HOST --> AM
     HOST --> TM
     HOST --> CM
+    HOST --> GM
+    HOST --> IM
     
     RBAC --> LDAP
     RBAC --> SAML
@@ -276,6 +282,28 @@ Enterprise-grade cost tracking and financial management system:
 
 The Cost Manager operates as a first-class component in the AESP Control Plane, providing comprehensive financial governance for AI agent operations. It captures detailed accounting events for every resource consumption activity, applies configurable rate cards, and generates detailed cost reports for enterprise financial management.
 
+#### 7. Governance Manager
+Enterprise-grade governance and approval workflow management:
+- **Approval Workflows**: Programmatic approval workflows for policies, tool contracts, budgets, and other governance artifacts
+- **Workflow Automation**: Automated approval routing based on artifact type, risk level, and organizational hierarchy
+- **Audit Integration**: Complete audit trail of all approval requests, decisions, and workflow state changes
+- **Multi-Stage Approval**: Support for complex, multi-stage approval processes with conditional routing
+- **Emergency Procedures**: Break-glass approval procedures for emergency situations with enhanced logging
+- **Compliance Integration**: Integration with compliance frameworks and regulatory approval requirements
+
+The Governance Manager ensures that all critical system changes go through proper approval channels, creating a programmatic, auditable governance process that eliminates manual approval gaps and provides complete visibility into organizational decision-making.
+
+#### 8. Identity Manager
+Centralized identity and principal management for enterprise environments:
+- **Service Account Management**: Complete lifecycle management for service accounts with automated provisioning and deprovisioning
+- **Principal Administration**: Centralized view and management of all system principals (users, service accounts, system accounts)
+- **Identity Synchronization**: Real-time synchronization with enterprise identity providers and directory services
+- **Credential Management**: Secure generation, rotation, and revocation of API keys and service account credentials
+- **Identity Audit**: Comprehensive audit trail of identity operations, role assignments, and credential usage
+- **Access Analytics**: Advanced analytics on identity usage patterns, access trends, and security insights
+
+The Identity Manager provides the administrative control plane for identity operations, ensuring that enterprise security teams have complete visibility and control over all system identities and their associated permissions.
+
 ## Components and Interfaces
 
 ### Enterprise Security Message Extensions
@@ -307,8 +335,8 @@ message AuditEvent {
   uint64 timestamp_ms = 2;             // Event timestamp in UTC milliseconds
   string event_type = 3;               // Type of event (AUTHENTICATION, AUTHORIZATION, TOOL_INVOCATION, etc.)
   string principal_id = 4;             // User or service account
-  string tenant_id = 5;                // Tenant context
-  string session_id = 6;               // Session identifier
+  string tenant_id = 5;                // Tenant context (may be empty for system-level events)
+  string session_id = 6;               // Session identifier (optional: may be empty for administrative events)
   string resource = 7;                 // Resource being accessed
   string action = 8;                   // Action being performed
   string outcome = 9;                  // SUCCESS, FAILURE, DENIED
@@ -393,9 +421,9 @@ message SecurityRequirements {
 message AccountingEvent {
   string event_id = 1;                 // Unique accounting event identifier
   uint64 timestamp_ms = 2;             // Event timestamp in UTC milliseconds
-  string tenant_id = 3;                // Tenant being charged
+  string tenant_id = 3;                // Tenant being charged (may be empty for platform-level costs)
   string principal_id = 4;             // User or service account
-  string session_id = 5;               // Session identifier
+  string session_id = 5;               // Session identifier (optional: may be empty for platform-level costs)
   string resource_type = 6;            // Type of resource consumed (CPU, MEMORY, STORAGE, API_CALL)
   double quantity = 7;                 // Amount of resource consumed
   string unit = 8;                     // Unit of measurement (seconds, bytes, calls)
@@ -575,6 +603,147 @@ service EnterpriseCostManagementService {
   rpc SetBudgetAlerts(SetBudgetAlertsRequest) returns (SetBudgetAlertsResponse);
   rpc GetCostForecast(GetCostForecastRequest) returns (GetCostForecastResponse);
   rpc GenerateInvoice(GenerateInvoiceRequest) returns (GenerateInvoiceResponse);
+}
+
+message RecordUsageRequest {
+  AccountingEvent usage_event = 1;     // Usage event to record
+  bool immediate_billing = 2;          // Process billing immediately
+}
+
+message GetUsageReportRequest {
+  string tenant_id = 1;                // Tenant filter
+  uint64 start_time = 2;               // Report start time
+  uint64 end_time = 3;                 // Report end time
+  repeated string resource_types = 4;  // Resource type filter
+  string aggregation = 5;              // Aggregation level (DAILY, WEEKLY, MONTHLY)
+}
+
+message GetTenantCostsRequest {
+  string tenant_id = 1;                // Target tenant
+  uint64 start_time = 2;               // Cost period start
+  uint64 end_time = 3;                 // Cost period end
+  bool include_forecast = 4;           // Include cost forecast
+}
+```
+
+#### Enterprise Governance Service
+
+```idl
+service EnterpriseGovernanceService {
+  rpc RequestApproval(RequestApprovalRequest) returns (RequestApprovalResponse);
+  rpc AdjudicateApproval(AdjudicateApprovalRequest) returns (AdjudicateApprovalResponse);
+  rpc ListPendingApprovals(ListPendingApprovalsRequest) returns (ListPendingApprovalsResponse);
+  rpc GetApprovalHistory(GetApprovalHistoryRequest) returns (GetApprovalHistoryResponse);
+  rpc CreateApprovalWorkflow(CreateApprovalWorkflowRequest) returns (CreateApprovalWorkflowResponse);
+  rpc UpdateApprovalWorkflow(UpdateApprovalWorkflowRequest) returns (UpdateApprovalWorkflowResponse);
+}
+
+message RequestApprovalRequest {
+  string artifact_type = 1;            // Type of artifact (TOOL_CONTRACT, POLICY, BUDGET, etc.)
+  string artifact_id = 2;              // Unique identifier for the artifact
+  bytes artifact_data = 3;             // Serialized artifact data
+  string requester_id = 4;             // Principal requesting approval
+  string tenant_id = 5;                // Tenant context
+  string justification = 6;            // Business justification for the request
+  repeated string required_approvers = 7; // Required approver roles or principals
+  uint64 expires_at = 8;               // Approval request expiration
+  map<string, string> metadata = 9;    // Additional approval context
+}
+
+message RequestApprovalResponse {
+  oneof response_type {
+    ApprovalRequestDetails success_details = 1;
+    EnterpriseError error = 2;
+  }
+}
+
+message ApprovalRequestDetails {
+  string approval_request_id = 1;      // Unique approval request identifier
+  string status = 2;                   // PENDING, APPROVED, REJECTED, EXPIRED
+  repeated string pending_approvers = 3; // Approvers who haven't responded
+  uint64 created_at = 4;               // Request creation timestamp
+}
+
+message AdjudicateApprovalRequest {
+  string approval_request_id = 1;      // Approval request to adjudicate
+  string approver_id = 2;              // Principal making the decision
+  string decision = 3;                 // APPROVE, REJECT
+  string comments = 4;                 // Approver comments
+  map<string, string> conditions = 5;  // Any conditions attached to approval
+}
+
+message AdjudicateApprovalResponse {
+  oneof response_type {
+    ApprovalDecisionDetails success_details = 1;
+    EnterpriseError error = 2;
+  }
+}
+
+message ApprovalDecisionDetails {
+  string final_status = 1;             // Final status after this decision
+  bool workflow_complete = 2;          // Whether all required approvals are complete
+  repeated string remaining_approvers = 3; // Approvers still needed (if any)
+}
+
+message ListPendingApprovalsRequest {
+  string approver_id = 1;              // Filter by approver (optional)
+  string artifact_type = 2;           // Filter by artifact type (optional)
+  string tenant_id = 3;                // Filter by tenant (optional)
+  uint32 limit = 4;                    // Result limit
+  string cursor = 5;                   // Pagination cursor
+}
+```
+
+#### Enterprise Identity Service
+
+```idl
+service EnterpriseIdentityService {
+  rpc CreateServiceAccount(CreateServiceAccountRequest) returns (CreateServiceAccountResponse);
+  rpc ListServiceAccounts(ListServiceAccountsRequest) returns (ListServiceAccountsResponse);
+  rpc RevokeServiceAccount(RevokeServiceAccountRequest) returns (RevokeServiceAccountResponse);
+  rpc ListPrincipals(ListPrincipalsRequest) returns (ListPrincipalsResponse);
+  rpc GetPrincipalDetails(GetPrincipalDetailsRequest) returns (GetPrincipalDetailsResponse);
+  rpc UpdatePrincipalRoles(UpdatePrincipalRolesRequest) returns (UpdatePrincipalRolesResponse);
+  rpc GetPrincipalAuditTrail(GetPrincipalAuditTrailRequest) returns (GetPrincipalAuditTrailResponse);
+}
+
+message CreateServiceAccountRequest {
+  string name = 1;                     // Service account name
+  string description = 2;              // Service account description
+  string tenant_id = 3;                // Tenant context
+  repeated string roles = 4;           // Initial roles
+  repeated string permissions = 5;     // Explicit permissions
+  uint64 expires_at = 6;               // Expiration timestamp (0 = no expiration)
+  map<string, string> metadata = 7;    // Additional metadata
+}
+
+message CreateServiceAccountResponse {
+  oneof response_type {
+    ServiceAccountDetails success_details = 1;
+    EnterpriseError error = 2;
+  }
+}
+
+message ServiceAccountDetails {
+  string service_account_id = 1;       // Unique service account identifier
+  string api_key = 2;                  // API key for authentication
+  string secret = 3;                   // Secret for API key validation
+  uint64 created_at = 4;               // Creation timestamp
+  uint64 expires_at = 5;               // Expiration timestamp
+}
+
+message ListPrincipalsRequest {
+  string tenant_id = 1;                // Filter by tenant (optional)
+  string principal_type = 2;           // Filter by type (USER, SERVICE_ACCOUNT, etc.)
+  bool include_inactive = 3;           // Include inactive principals
+  uint32 limit = 4;                    // Result limit
+  string cursor = 5;                   // Pagination cursor
+}
+
+message GetPrincipalDetailsRequest {
+  string principal_id = 1;             // Principal to get details for
+  bool include_permissions = 2;        // Include effective permissions
+  bool include_audit_summary = 3;      // Include recent audit activity summary
 }
 
 message RecordUsageRequest {
