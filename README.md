@@ -24,7 +24,7 @@ ALTAR (The Agent & Tool Arbitration Protocol) establishes a new standard for how
 
 This design ensures security, scalability, and observability are built-in, not bolted on.
 
-<p align="center">
+
 ```mermaid
 %%{
   init: {
@@ -78,7 +78,6 @@ graph LR
     HOST <--> RT2
     HOST <--> RT3
 ```
-</p>
 
 ## Key Features
 
