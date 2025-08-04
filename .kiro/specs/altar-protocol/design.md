@@ -147,7 +147,10 @@ message FulfillTools {
 
 // Tool Invocation
 message ToolCall {
-  string invocation_id = 1;        // Unique correlation ID for this invocation
+  // Client-generated UUID for this specific call. The Host SHOULD treat this
+  // as an idempotency key for a short window (e.g., 5 minutes) to make the
+  // system resilient to network retries.
+  string invocation_id = 1;
   string correlation_id = 2;       // Top-level correlation ID for end-to-end tracing
   string session_id = 3;           // Session context for the call
   string tool_name = 4;            // Namespaced tool name (runtime_id/tool_name)
@@ -183,6 +186,20 @@ message CreateSession {
   map<string, string> metadata = 2; // Initial session metadata
   uint64 ttl_seconds = 3;          // Requested time-to-live
   SecurityContext security_context = 4; // Security requirements (Level 2+)
+}
+
+// (Level 2+) Defines the security context for a session, making multi-tenancy
+// a first-class citizen of the protocol.
+message SecurityContext {
+  // Identity of the end-user or principal on whose behalf the session is acting.
+  // This is the CRITICAL piece for tenancy and data access control.
+  string principal_id = 1;
+
+  // The tenant or organization this session belongs to.
+  string tenant_id = 2;
+
+  // Opaque tokens or claims passed from an external auth system.
+  map<string, string> claims = 3;
 }
 
 message DestroySession {
@@ -587,6 +604,26 @@ The protocol defines standardized capability strings to ensure interoperability:
 - `certificate_auth`: Supports certificate-based authentication
 - `oauth_integration`: Supports OAuth 2.0 authentication flows
 - `parameter_encryption`: Supports message-level parameter encryption
+
+## Future Considerations
+
+### Batch Operations (Level 3+ Feature)
+
+While the current specification focuses on single tool calls, a common and important optimization is batching. A formal batching mechanism is a Level 3+ feature, but is outlined here to ensure the architecture supports it.
+
+```idl
+// Level 3+ Feature
+message BatchToolCall {
+  string batch_correlation_id = 1; // ID for the entire batch
+  string session_id = 2;
+  repeated ToolCall calls = 3; // A list of individual tool calls
+}
+
+message BatchToolResult {
+  string batch_correlation_id = 1;
+  repeated ToolResult results = 2; // Results in the same order as the request
+}
+```
 
 ## Security Model and Trust Architecture
 

@@ -96,11 +96,12 @@ The protocol addresses the critical need for a unified, transport-agnostic stand
 
 1. WHEN invoking tools THEN the system SHALL support both synchronous and asynchronous execution patterns
 2. WHEN executing tools THEN each invocation SHALL have a unique correlation ID for tracking and debugging
-3. WHEN handling parameters THEN the system SHALL validate parameters against Host-managed tool contracts before execution
-4. WHEN returning results THEN the system SHALL support structured success payloads and detailed error information
-5. WHEN streaming results THEN the system SHALL maintain chunk ordering and provide clear stream termination signals
-6. WHEN handling streaming errors THEN StreamChunk messages SHALL include optional error_details field for in-band error reporting
-7. WHEN streaming errors occur THEN error chunks SHALL have is_final set to true and payload should be ignored
+3. WHEN invoking a tool THEN the client SHALL generate a unique `invocation_id` that the Host can use for idempotency
+4. WHEN handling parameters THEN the system SHALL validate parameters against Host-managed tool contracts before execution
+5. WHEN returning results THEN the system SHALL support structured success payloads and detailed error information
+6. WHEN streaming results THEN the system SHALL maintain chunk ordering and provide clear stream termination signals
+7. WHEN handling streaming errors THEN StreamChunk messages SHALL include optional error_details field for in-band error reporting
+8. WHEN streaming errors occur THEN error chunks SHALL have is_final set to true and payload should be ignored
 
 ### Requirement 8: Error Handling and Resilience
 
@@ -137,6 +138,7 @@ The protocol addresses the critical need for a unified, transport-agnostic stand
 3. WHEN handling sensitive data THEN the system SHALL support encryption of message payloads and parameter values
 4. WHEN auditing access THEN the system SHALL log all authentication attempts and authorization decisions
 5. WHEN sandboxing execution THEN the system SHALL provide extension points for resource limits and execution constraints
+6. WHEN defining a session's security context THEN the `SecurityContext` message SHALL include `principal_id`, `tenant_id`, and `claims` fields
 
 ### Requirement 11: Integration with Existing Systems
 

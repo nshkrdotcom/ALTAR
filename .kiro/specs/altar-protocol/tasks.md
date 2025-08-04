@@ -18,7 +18,7 @@ The plan follows a test-driven development approach, prioritizing core functiona
 - [ ] 1.1 Define Enhanced Core Message Types Using Language-Neutral IDL
   - Create language-neutral IDL definitions for AnnounceRuntime message with runtime_id, language, version, well-known capabilities fields
   - Create FulfillTools message (replacing RegisterTools) with session_id, contract_names array, runtime_id fields for security
-  - Create enhanced ToolCall message with invocation_id, correlation_id, session_id, namespaced tool_name, parameters, metadata fields
+  - Create enhanced ToolCall message with client-generated invocation_id (for idempotency), correlation_id, session_id, namespaced tool_name, parameters, metadata fields
   - Create enhanced ToolResult message with invocation_id, correlation_id, status, payload, error_details, runtime_metadata fields
   - Create StreamChunk message with invocation_id, chunk_id, payload, is_final, error_details fields for in-band error reporting
   - Add GetAvailableContracts message for Runtime bootstrap discovery
