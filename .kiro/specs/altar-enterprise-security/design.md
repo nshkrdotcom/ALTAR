@@ -6,6 +6,27 @@ The ALTAR Enterprise Security Protocol (AESP) is a specialized, enterprise-grade
 
 Unlike universal protocols designed for open internet collaboration, AESP is purpose-built for controlled enterprise environments where security, compliance, and governance are paramount. The protocol transforms ALTAR's centralized Host-centric architecture from a potential limitation into a strategic advantage for enterprise deployments.
 
+## Relationship to the ALTAR Base Protocol
+
+AESP is a specialized profile of ALTAR designed for Level 3 Enterprise Compliance. AESP-specific messages, such as `EnterpriseRuntimeAnnouncement` and `EnterpriseSecurityContext`, **replace** their base protocol counterparts during enterprise deployments. They are designed to be supersets, containing all necessary base fields plus enterprise-specific extensions.
+
+Key relationships:
+- **Message Extension**: Enterprise messages extend base ALTAR messages with additional security, compliance, and governance fields
+- **Protocol Compatibility**: AESP maintains full compatibility with the core ALTAR Host-Runtime architecture and message flow patterns
+- **Security Enhancement**: AESP enhances the base protocol's Host-managed contract security model with enterprise-grade authentication, authorization, and audit capabilities
+- **Compliance Focus**: While base ALTAR provides foundational security, AESP adds comprehensive regulatory compliance and governance frameworks
+
+### Message Replacement Strategy
+
+AESP implements a clear message replacement strategy where enterprise messages completely replace their base counterparts:
+
+- **EnterpriseRuntimeAnnouncement** replaces `AnnounceRuntime` with additional tenant isolation, security zone, and compliance metadata
+- **EnterpriseSecurityContext** replaces base `SecurityContext` with organizational hierarchy, role-based permissions, and policy evaluation context
+- **EnterpriseToolContract** replaces base `ToolContract` with approval workflows, compliance tags, and risk assessment metadata
+- **Enterprise Session Messages** replace base session management with multi-tenant isolation and comprehensive audit trails
+
+This replacement approach ensures that enterprise deployments have complete control over security, compliance, and governance while maintaining the core ALTAR orchestration patterns that make the protocol effective.
+
 ## Architecture
 
 ### High-Level Enterprise Security Architecture
@@ -37,6 +58,7 @@ graph TB
             PE[Policy Engine]
             AM[Audit Manager]
             TM[Tenant Manager]
+            CM[Cost Manager]
             
             style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
             style SM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
@@ -44,6 +66,7 @@ graph TB
             style PE fill:#dc2626,stroke:#b91c1c,color:#ffffff
             style AM fill:#059669,stroke:#047857,color:#ffffff
             style TM fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+            style CM fill:#f59e0b,stroke:#d97706,color:#ffffff
         end
         
         subgraph "Enterprise Identity Layer"
@@ -102,6 +125,7 @@ graph TB
     HOST --> PE
     HOST --> AM
     HOST --> TM
+    HOST --> CM
     
     RBAC --> LDAP
     RBAC --> SAML
@@ -142,12 +166,87 @@ Enterprise-grade access control with fine-grained permissions:
 - **Audit Trail**: Complete audit trail of all authorization decisions
 
 #### 3. Policy Engine
-Flexible, declarative policy management system:
-- **Policy as Code**: Version-controlled, declarative policy definitions
-- **Real-time Evaluation**: Sub-millisecond policy evaluation for all requests
-- **Complex Conditions**: Support for multi-dimensional policy conditions
-- **Emergency Overrides**: Secure emergency access with enhanced logging
-- **Policy Testing**: Comprehensive policy simulation and testing framework
+Flexible, declarative policy management system using Common Expression Language (CEL):
+- **Policy as Code**: Version-controlled, declarative policy definitions using CEL syntax for maximum expressiveness and industry compatibility
+- **Real-time Evaluation**: Sub-millisecond policy evaluation for all requests using CEL's optimized evaluation engine
+- **Complex Conditions**: Support for multi-dimensional policy conditions using CEL's rich expression capabilities including boolean logic, string operations, list comprehensions, and custom functions
+- **Emergency Overrides**: Secure emergency access with enhanced logging and break-glass procedures
+- **Policy Testing**: Comprehensive policy simulation and testing framework with CEL validation and dry-run capabilities
+- **Policy Lifecycle**: Complete policy versioning, staging, testing, and rollout management with automated rollback
+
+##### Common Expression Language (CEL) Integration
+
+AESP leverages Google's Common Expression Language (CEL) for policy condition evaluation, providing:
+
+**CEL Advantages for Enterprise Policy**:
+- **Industry Standard**: CEL is used by Google Cloud IAM, Kubernetes, and other enterprise systems, ensuring familiarity for enterprise developers
+- **Rich Expression Capabilities**: Support for complex boolean logic, string matching, list operations, and mathematical expressions
+- **Type Safety**: Compile-time type checking prevents policy errors and ensures reliable evaluation
+- **Performance**: Optimized evaluation engine with sub-millisecond response times for complex conditions
+- **Security**: Sandboxed execution environment prevents policy injection attacks
+
+**Example CEL Policy Conditions**:
+```cel
+// Time-based access control
+request.time.getHours() >= 9 && request.time.getHours() <= 17
+
+// Role and data classification based access
+'data-scientist' in request.user.roles && request.resource.classification in ['public', 'internal']
+
+// Complex multi-factor conditions
+request.user.security_clearance >= 'confidential' && 
+request.source_ip in ['10.0.0.0/8', '192.168.0.0/16'] &&
+request.user.mfa_verified == true
+
+// Business logic integration
+request.tenant.cost_center in organization.approved_cost_centers &&
+request.resource.estimated_cost <= request.user.spending_limit
+```
+
+##### Policy Lifecycle Management
+
+AESP implements a comprehensive policy lifecycle management system to ensure safe, auditable policy updates:
+
+**Staging and Testing**: All policy changes must go through a structured workflow:
+1. **Development**: Policies are written using CEL syntax and validated for syntax correctness
+2. **Testing**: The `TestPolicy` and `ValidatePolicy` RPCs are used to simulate policy effects against historical data
+3. **Staging**: Policies are deployed to a staging environment for integration testing
+4. **Approval**: Policy changes require approval from designated policy administrators
+
+**Activation**: Policy activation follows a controlled rollout process:
+1. **Canary Deployment**: New policies are initially applied to a small subset of requests
+2. **Monitoring**: Policy effects are monitored for unexpected impacts or performance issues
+3. **Gradual Rollout**: Successful policies are gradually applied to larger request volumes
+4. **Full Activation**: Policies achieving validation criteria are fully activated
+
+**Auditability**: All policy lifecycle events are captured by the AuditManager:
+- Policy creation, modification, and deletion events
+- Test results and validation outcomes
+- Approval workflows and administrator decisions
+- Activation timelines and rollback events
+- Performance impact and effectiveness metrics
+
+##### Contract and Policy Versioning Lifecycle
+
+AESP implements comprehensive versioning for both policies and tool contracts to ensure safe, auditable updates:
+
+**Policy Versioning**:
+- **Semantic Versioning**: Policies use semantic versioning (major.minor.patch) to indicate the scope of changes
+- **Version Compatibility**: Major version changes indicate breaking changes, minor versions add features, patch versions fix issues
+- **Concurrent Versions**: Multiple policy versions can coexist during transition periods with gradual migration
+- **Version Deprecation**: Older policy versions are deprecated with clear timelines and migration paths
+
+**Tool Contract Versioning**:
+- **Contract Evolution**: EnterpriseToolContract inherits the `contract_version` field from base ToolContract for semantic versioning
+- **Backward Compatibility**: Contract updates maintain backward compatibility within major versions
+- **Approval Workflows**: Contract version updates require approval through enterprise governance processes
+- **Runtime Compatibility**: Runtimes declare supported contract version ranges for compatibility validation
+
+**Version Conflict Resolution**:
+- **Priority Rules**: Clear precedence rules for conflicting policy versions based on specificity and recency
+- **Conflict Detection**: Automated detection of version conflicts during policy deployment
+- **Resolution Strategies**: Configurable conflict resolution strategies (fail-fast, use-latest, manual-resolution)
+- **Impact Analysis**: Comprehensive impact analysis before version updates with rollback planning
 
 #### 4. Audit Manager
 Enterprise-grade audit logging and compliance system:
@@ -164,6 +263,18 @@ Comprehensive multi-tenancy with complete isolation:
 - **Network Segmentation**: Virtual network isolation between tenants
 - **Quota Management**: Configurable resource quotas and billing integration
 - **Cross-Tenant Prevention**: Explicit prevention of cross-tenant data access
+
+#### 6. Cost Manager
+Enterprise-grade cost tracking and financial management system:
+- **Resource Metering**: Detailed tracking of CPU, memory, storage, API usage, and tool invocation costs with granular attribution
+- **Cost Attribution**: Multi-dimensional cost allocation supporting chargeback, showback, and cost center attribution
+- **Budget Management**: Configurable budgets with real-time alerts, automated controls, and spending limits
+- **Cost Optimization**: Intelligent recommendations for resource optimization based on usage patterns and cost analysis
+- **Financial Integration**: Seamless integration with enterprise billing systems, ERP platforms, and financial reporting tools
+- **Forecasting**: Predictive cost modeling based on historical usage trends and planned capacity changes
+- **Rate Management**: Flexible rate card management supporting different pricing models and cost structures
+
+The Cost Manager operates as a first-class component in the AESP Control Plane, providing comprehensive financial governance for AI agent operations. It captures detailed accounting events for every resource consumption activity, applies configurable rate cards, and generates detailed cost reports for enterprise financial management.
 
 ## Components and Interfaces
 
@@ -223,7 +334,7 @@ message PolicyDefinition {
 }
 
 message PolicyRule {
-  string condition = 1;                // Policy condition in DSL
+  string condition = 1;                // Policy condition expressed in Common Expression Language (CEL)
   string effect = 2;                   // ALLOW, DENY, AUDIT
   repeated string actions = 3;         // Actions this rule applies to
   map<string, string> parameters = 4;  // Rule parameters
@@ -231,9 +342,9 @@ message PolicyRule {
 
 // Enterprise Tool Contract (extends base ToolContract)
 message EnterpriseToolContract {
-  // Base contract fields
+  // Base contract fields (inherited from ToolContract)
   string name = 1;
-  string contract_version = 2;
+  string contract_version = 2;         // Inherited from base ToolContract - semantic versioning
   string description = 3;
   repeated ParameterSchema parameters = 4;
   AltarType return_type = 5;
@@ -277,6 +388,52 @@ message SecurityRequirements {
   repeated string allowed_cipher_suites = 4; // Allowed cipher suites
   bool requires_certificate_pinning = 5; // Requires certificate pinning
 }
+
+// Cost Management and Accounting
+message AccountingEvent {
+  string event_id = 1;                 // Unique accounting event identifier
+  uint64 timestamp_ms = 2;             // Event timestamp in UTC milliseconds
+  string tenant_id = 3;                // Tenant being charged
+  string principal_id = 4;             // User or service account
+  string session_id = 5;               // Session identifier
+  string resource_type = 6;            // Type of resource consumed (CPU, MEMORY, STORAGE, API_CALL)
+  double quantity = 7;                 // Amount of resource consumed
+  string unit = 8;                     // Unit of measurement (seconds, bytes, calls)
+  double unit_cost = 9;                // Cost per unit
+  double total_cost = 10;              // Total cost for this event
+  string cost_center = 11;             // Cost center or department
+  string project_id = 12;              // Project or application identifier
+  map<string, string> metadata = 13;   // Additional accounting metadata
+}
+
+message BudgetDefinition {
+  string budget_id = 1;                // Unique budget identifier
+  string name = 2;                     // Human-readable budget name
+  string tenant_id = 3;                // Tenant this budget applies to
+  string cost_center = 4;              // Cost center or department
+  double amount = 5;                   // Budget amount
+  string currency = 6;                 // Currency code (USD, EUR, etc.)
+  string period = 7;                   // Budget period (MONTHLY, QUARTERLY, YEARLY)
+  repeated string alert_thresholds = 8; // Alert thresholds (50%, 80%, 100%)
+  bool auto_shutdown = 9;              // Automatically shutdown resources when exceeded
+  uint64 start_date = 10;              // Budget period start date
+  uint64 end_date = 11;                // Budget period end date
+}
+
+// Enterprise Error Handling
+message EnterpriseError {
+  string code = 1;                     // Error code (AUTHENTICATION_FAILED, AUTHORIZATION_DENIED, etc.)
+  string message = 2;                  // Human-readable error message
+  map<string, string> details = 3;     // Additional error details
+  string tenant_id = 4;                // Tenant context
+  string principal_id = 5;             // User or service account
+  string correlation_id = 6;           // Request correlation ID
+  uint64 retry_after_ms = 7;           // Retry delay in milliseconds (0 = no retry)
+  repeated string security_implications = 8; // Security implications of the error
+  repeated string compliance_impact = 9; // Compliance impact assessment
+  repeated string remediation_steps = 10; // Steps to remediate the error
+  bool escalation_required = 11;       // Whether this error requires escalation
+}
 ```
 
 ### Enterprise Security Interfaces
@@ -306,12 +463,17 @@ message AuthenticateUserRequest {
 }
 
 message AuthenticateUserResponse {
-  bool success = 1;                    // Authentication success
-  string access_token = 2;             // JWT access token
-  string refresh_token = 3;            // Refresh token
-  uint64 expires_at = 4;               // Token expiration
-  EnterpriseSecurityContext security_context = 5; // User security context
-  string error_message = 6;            // Error details if failed
+  oneof response_type {
+    SuccessfulAuthDetails success_details = 1;
+    EnterpriseError error = 2;
+  }
+}
+
+message SuccessfulAuthDetails {
+  string access_token = 1;             // JWT access token
+  string refresh_token = 2;            // Refresh token
+  uint64 expires_at = 3;               // Token expiration
+  EnterpriseSecurityContext security_context = 4; // User security context
 }
 ```
 
@@ -399,6 +561,40 @@ message EvaluatePolicyRequest {
   string principal_id = 3;             // Principal
   string resource = 4;                 // Resource
   string action = 5;                   // Action
+}
+```
+
+#### Enterprise Cost Management Service
+
+```idl
+service EnterpriseCostManagementService {
+  rpc RecordUsage(RecordUsageRequest) returns (RecordUsageResponse);
+  rpc GetUsageReport(GetUsageReportRequest) returns (GetUsageReportResponse);
+  rpc GetTenantCosts(GetTenantCostsRequest) returns (GetTenantCostsResponse);
+  rpc CreateBudget(CreateBudgetRequest) returns (CreateBudgetResponse);
+  rpc SetBudgetAlerts(SetBudgetAlertsRequest) returns (SetBudgetAlertsResponse);
+  rpc GetCostForecast(GetCostForecastRequest) returns (GetCostForecastResponse);
+  rpc GenerateInvoice(GenerateInvoiceRequest) returns (GenerateInvoiceResponse);
+}
+
+message RecordUsageRequest {
+  AccountingEvent usage_event = 1;     // Usage event to record
+  bool immediate_billing = 2;          // Process billing immediately
+}
+
+message GetUsageReportRequest {
+  string tenant_id = 1;                // Tenant filter
+  uint64 start_time = 2;               // Report start time
+  uint64 end_time = 3;                 // Report end time
+  repeated string resource_types = 4;  // Resource type filter
+  string aggregation = 5;              // Aggregation level (DAILY, WEEKLY, MONTHLY)
+}
+
+message GetTenantCostsRequest {
+  string tenant_id = 1;                // Target tenant
+  uint64 start_time = 2;               // Cost period start
+  uint64 end_time = 3;                 // Cost period end
+  bool include_forecast = 4;           // Include cost forecast
 }
 ```
 
