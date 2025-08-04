@@ -1,0 +1,34 @@
+# Dependencies
+/deps/
+
+# Build artifacts
+/_build/
+
+# Releases
+/_build/prod/rel/altar/
+
+# Archives
+/*.ez
+
+# Crash dumps
+/erl_crash.dump
+/eix_crash.dump
+
+# Local config
+.env
+.env.*
+
+# Dialyzer PLTs
+/priv/plts/
+
+# Logs
+/logs/
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE-specific files
+.idea/
+.vscode/
