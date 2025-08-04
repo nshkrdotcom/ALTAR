@@ -52,6 +52,7 @@ graph TB
     subgraph "Enterprise Security Perimeter"
         subgraph "AESP Control Plane"
             direction TB
+            GATEWAY[API Gateway]
             HOST[AESP Host Cluster]
             SM[Session Manager]
             RBAC[RBAC Engine]
@@ -61,7 +62,9 @@ graph TB
             CM[Cost Manager]
             GM[Governance Manager]
             IM[Identity Manager]
+            CONFIG[Configuration Manager]
             
+            style GATEWAY fill:#1f2937,stroke:#111827,color:#ffffff,fontWeight:bold
             style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
             style SM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
             style RBAC fill:#dc2626,stroke:#b91c1c,color:#ffffff
@@ -71,6 +74,7 @@ graph TB
             style CM fill:#f59e0b,stroke:#d97706,color:#ffffff
             style GM fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
             style IM fill:#06b6d4,stroke:#0891b2,color:#ffffff
+            style CONFIG fill:#10b981,stroke:#059669,color:#ffffff
         end
         
         subgraph "Enterprise Identity Layer"
@@ -124,6 +128,7 @@ graph TB
     end
     
     %% Connections
+    GATEWAY --> HOST
     HOST --> SM
     HOST --> RBAC
     HOST --> PE
@@ -132,6 +137,7 @@ graph TB
     HOST --> CM
     HOST --> GM
     HOST --> IM
+    HOST --> CONFIG
     
     RBAC --> LDAP
     RBAC --> SAML
@@ -154,6 +160,17 @@ graph TB
 ```
 
 ### Core Enterprise Components
+
+#### 0. API Gateway
+The unified entry point for all external client interactions with the AESP Control Plane:
+- **Request Termination**: All client TLS connections terminate at the gateway for centralized security
+- **Authentication**: Initial access token validation before routing requests to internal services
+- **Rate Limiting**: Protection against abuse with configurable rate limits and throttling policies
+- **Request Routing**: Intelligent routing of RPC calls to appropriate internal managers and services
+- **Load Balancing**: Distribution of requests across multiple Host instances for high availability
+- **Monitoring**: Centralized request logging, metrics collection, and performance monitoring
+
+The API Gateway provides a clean, secure, and scalable front door to the entire AESP system, abstracting the complexity of the internal microservices architecture from external clients.
 
 #### 1. AESP Host Cluster
 The enterprise-grade central orchestration engine with high availability:
@@ -303,6 +320,21 @@ Centralized identity and principal management for enterprise environments:
 - **Access Analytics**: Advanced analytics on identity usage patterns, access trends, and security insights
 
 The Identity Manager provides the administrative control plane for identity operations, ensuring that enterprise security teams have complete visibility and control over all system identities and their associated permissions.
+
+#### 9. Configuration Manager
+Dynamic configuration management for zero-downtime operational control:
+- **Runtime Configuration**: Dynamic updates to system configuration without requiring restarts
+- **Feature Flags**: Runtime control of feature enablement and experimental capabilities
+- **Performance Tuning**: Dynamic adjustment of cache TTLs, timeout values, and performance parameters
+- **Governance Integration**: Configuration changes requiring approval go through the Governance Service workflow
+- **Change Tracking**: Complete audit trail of all configuration changes with rollback capabilities
+- **Environment Management**: Environment-specific configuration with promotion workflows
+
+The Configuration Manager ensures that the AESP platform remains as dynamic and manageable as the agent workflows it orchestrates, enabling operational teams to respond quickly to changing requirements without system downtime.
+
+#### Inter-Service Orchestration
+
+The components of the AESP Control Plane are designed to collaborate seamlessly to enforce complex business logic and governance requirements. For example, an `EnterpriseGovernanceService` approval workflow can query the `CostManager` to check budget compliance, consult the `PolicyEngine` to evaluate risk levels, and verify with the `IdentityManager` that the requester has appropriate permissions before routing a high-cost tool approval request to the designated approver. This inter-service orchestration is managed internally via secure gRPC communication, ensuring a cohesive and powerful governance framework that can handle sophisticated enterprise requirements while maintaining security and auditability.
 
 ## Components and Interfaces
 
@@ -734,7 +766,7 @@ message ServiceAccountDetails {
 
 message ListPrincipalsRequest {
   string tenant_id = 1;                // Filter by tenant (optional)
-  string principal_type = 2;           // Filter by type (USER, SERVICE_ACCOUNT, etc.)
+  PrincipalType principal_type = 2;    // Filter by principal type
   bool include_inactive = 3;           // Include inactive principals
   uint32 limit = 4;                    // Result limit
   string cursor = 5;                   // Pagination cursor
@@ -744,6 +776,65 @@ message GetPrincipalDetailsRequest {
   string principal_id = 1;             // Principal to get details for
   bool include_permissions = 2;        // Include effective permissions
   bool include_audit_summary = 3;      // Include recent audit activity summary
+}
+```
+
+#### Enterprise Configuration Service
+
+```idl
+service EnterpriseConfigurationService {
+  rpc GetConfigValue(GetConfigValueRequest) returns (GetConfigValueResponse);
+  rpc SetConfigValue(SetConfigValueRequest) returns (SetConfigValueResponse);
+  rpc ListConfigKeys(ListConfigKeysRequest) returns (ListConfigKeysResponse);
+  rpc SubscribeToChanges(SubscribeToChangesRequest) returns (stream ConfigChangeEvent);
+  rpc GetConfigHistory(GetConfigHistoryRequest) returns (GetConfigHistoryResponse);
+  rpc RollbackConfig(RollbackConfigRequest) returns (RollbackConfigResponse);
+}
+
+enum PrincipalType {
+  PRINCIPAL_TYPE_UNSPECIFIED = 0;
+  USER = 1;
+  SERVICE_ACCOUNT = 2;
+  SYSTEM_ACCOUNT = 3;                  // For internal AESP processes
+}
+
+message GetConfigValueRequest {
+  string key = 1;                      // Configuration key
+  string environment = 2;              // Environment context (optional)
+}
+
+message GetConfigValueResponse {
+  oneof response_type {
+    ConfigValue success_details = 1;
+    EnterpriseError error = 2;
+  }
+}
+
+message ConfigValue {
+  string key = 1;                      // Configuration key
+  string value = 2;                    // Configuration value
+  string data_type = 3;                // Value data type (STRING, INTEGER, BOOLEAN, JSON)
+  bool sensitive = 4;                  // Whether value contains sensitive data
+  uint64 last_updated = 5;             // Last update timestamp
+  string updated_by = 6;               // Principal who last updated
+}
+
+message SetConfigValueRequest {
+  string key = 1;                      // Configuration key
+  string value = 2;                    // New configuration value
+  string data_type = 3;                // Value data type
+  bool sensitive = 4;                  // Whether value contains sensitive data
+  string justification = 5;            // Change justification
+  bool requires_approval = 6;          // Whether change requires governance approval
+}
+
+message ConfigChangeEvent {
+  string key = 1;                      // Configuration key that changed
+  string old_value = 2;                // Previous value
+  string new_value = 3;                // New value
+  uint64 timestamp = 4;                // Change timestamp
+  string changed_by = 5;               // Principal who made the change
+  string change_reason = 6;            // Reason for the change
 }
 
 message RecordUsageRequest {
@@ -951,6 +1042,34 @@ defmodule AESP.Types.EnterpriseError do
   }
 end
 ```
+
+## Enterprise Client SDK and Developer Experience
+
+### AESP Client SDK Vision
+
+To provide an optimal developer experience for AI agent builders, AESP includes a comprehensive Enterprise Client SDK that abstracts the complexity of the enterprise security infrastructure:
+
+#### Core SDK Features
+- **Automatic Token Management**: Seamless handling of JWT token acquisition, refresh, and expiration with transparent retry logic
+- **API Gateway Integration**: Simplified interaction with the unified API Gateway endpoint, eliminating the need for developers to understand internal service topology
+- **Structured Error Handling**: Intelligent processing of `EnterpriseError` responses with automatic remediation suggestions and escalation workflows
+- **Policy-Aware Development**: SDK helpers that allow developers to test their agent behavior against enterprise policies during development
+- **Multi-Tenant Support**: Built-in tenant context management with automatic tenant isolation and resource quota awareness
+- **Audit Integration**: Automatic audit event generation for agent activities with minimal developer overhead
+
+#### Language Support
+The AESP Client SDK is designed to support multiple programming languages commonly used in AI development:
+- **Python SDK**: Full-featured SDK with async/await support for high-performance AI workloads
+- **JavaScript/TypeScript SDK**: Browser and Node.js compatible for web-based AI applications
+- **Java SDK**: Enterprise-grade SDK with Spring Boot integration for large-scale applications
+- **Go SDK**: High-performance SDK for systems-level AI infrastructure
+- **C# SDK**: .NET integration for Microsoft-centric enterprise environments
+
+#### Developer Workflow Integration
+- **IDE Extensions**: Integration with popular IDEs for policy validation and compliance checking during development
+- **CLI Tools**: Command-line utilities for testing, deployment, and governance workflow management
+- **Testing Framework**: Comprehensive testing utilities for validating agent behavior in enterprise environments
+- **Documentation**: Interactive documentation with code examples and enterprise-specific best practices
 
 ## Testing Strategy
 

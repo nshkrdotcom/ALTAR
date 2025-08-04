@@ -87,6 +87,30 @@ This milestone establishes the fundamental security architecture, multi-tenant i
   - Write unit tests for error classification, enrichment, escalation, correlation, audit logging, and recovery procedures
   - _Requirements: 1.8, 4.8, 5.3, 7.8_
 
+- [ ] 1.6 Build Enterprise API Gateway
+  - Create AESP.APIGateway as the unified entry point for all external client interactions with the AESP Control Plane
+  - Implement TLS termination with enterprise certificate management and secure connection handling
+  - Create authentication layer with initial access token validation before routing requests to internal services
+  - Implement rate limiting and throttling with configurable policies to protect against abuse and ensure fair resource usage
+  - Add intelligent request routing with load balancing across multiple Host instances for high availability
+  - Create monitoring and observability with centralized request logging, metrics collection, and performance tracking
+  - Implement circuit breaker patterns with fallback mechanisms for resilient service interactions
+  - Add API versioning support with backward compatibility and graceful deprecation handling
+  - Write unit tests for TLS termination, authentication, rate limiting, routing, monitoring, and circuit breaker functionality
+  - _Requirements: 1.7, 8.1, 9.4, 10.3_
+
+- [ ] 1.7 Implement Dynamic Configuration Management
+  - Create AESP.ConfigurationManager GenServer for zero-downtime configuration management and operational control
+  - Implement runtime configuration updates with hot-reloading capabilities for system parameters, feature flags, and performance tuning
+  - Create configuration governance integration with approval workflows for sensitive configuration changes
+  - Implement configuration versioning with change tracking, rollback capabilities, and audit trails
+  - Add environment-specific configuration management with promotion workflows and environment isolation
+  - Create configuration subscription system with real-time change notifications to dependent services
+  - Implement configuration validation with schema checking, dependency analysis, and impact assessment
+  - Add configuration security with encryption for sensitive values and access control for configuration management
+  - Write unit tests for configuration updates, governance integration, versioning, environment management, and security
+  - _Requirements: 8.8, 10.2, 10.6_
+
 - [ ] 2. Enterprise Authentication and Identity Integration
   - Implement enterprise authentication with LDAP, Active Directory, SAML, and OAuth 2.0 support
   - Create certificate-based authentication with mutual TLS and enterprise PKI integration
