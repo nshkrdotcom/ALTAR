@@ -11,43 +11,88 @@ The protocol follows a Host-Runtime architecture where a central Host process or
 ### High-Level System Architecture
 
 ```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'background': '#ffffff',
+      'primaryColor': '#f8fafc',
+      'primaryTextColor': '#1e293b',
+      'lineColor': '#64748b',
+      'secondaryColor': '#e2e8f0',
+      'tertiaryColor': '#f1f5f9',
+      'primaryBorderColor': '#e2e8f0',
+      'secondaryBorderColor': '#cbd5e1',
+      'tertiaryBorderColor': '#94a3b8'
+    }
+  }
+}%%
 graph LR
-    subgraph "ALTAR Ecosystem"
-        subgraph "Host Layer"
+    subgraph AE ["ALTAR Ecosystem"]
+      direction LR
+      style AE fill:#f8fafc,stroke:#e2e8f0
+
+        subgraph HL ["Host Layer"]
+            style HL fill:#f1f5f9,stroke:#cbd5e1,color:#475569
             HOST[ALTAR Host]
             SM[Session Manager]
             TR[Tool Registry]
             AR[Authorization Engine]
             TM[Telemetry Manager]
+            style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
+            style SM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style TR fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style AR fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style TM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
         end
         
-        subgraph "Runtime Layer"
+        subgraph RL ["Runtime Layer"]
+            style RL fill:#f1f5f9,stroke:#cbd5e1,color:#475569
             RT1[Python Runtime]
             RT2[Elixir Runtime]
             RT3[Go Runtime]
             RT4[Node.js Runtime]
+            style RT1 fill:#34d399,stroke:#25a274,color:#ffffff
+            style RT2 fill:#34d399,stroke:#25a274,color:#ffffff
+            style RT3 fill:#34d399,stroke:#25a274,color:#ffffff
+            style RT4 fill:#34d399,stroke:#25a274,color:#ffffff
         end
         
-        subgraph "Client Layer"
+        subgraph CL ["Client Layer"]
+            style CL fill:#f1f5f9,stroke:#cbd5e1,color:#475569
             AI[AI Agents]
             APP[Applications]
             CLI[CLI Tools]
+            style AI fill:#38bdf8,stroke:#2899c8,color:#ffffff
+            style APP fill:#38bdf8,stroke:#2899c8,color:#ffffff
+            style CLI fill:#38bdf8,stroke:#2899c8,color:#ffffff
         end
         
-        subgraph "Transport Layer"
+        subgraph TL ["Transport Layer"]
+            style TL fill:#f1f5f9,stroke:#cbd5e1,color:#475569
             GRPC[gRPC]
             WS[WebSockets]
             TCP[TCP]
             MQ[Message Queues]
+            style GRPC fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style WS fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style TCP fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style MQ fill:#e2e8f0,stroke:#cbd5e1,color:#475569
         end
     end
     
-    subgraph "External Systems"
+    subgraph ES ["External Systems"]
+        style ES fill:#f8fafc,stroke:#e2e8f0
         GEMINI[Gemini API]
         OPENAI[OpenAI API]
         CLAUDE[Claude API]
         DB[(Databases)]
         API[External APIs]
+        style GEMINI fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+        style OPENAI fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+        style CLAUDE fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+        style DB fill:#f1f5f9,stroke:#cbd5e1,color:#475569
+        style API fill:#f1f5f9,stroke:#cbd5e1,color:#475569
     end
     
     %% Connections
