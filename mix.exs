@@ -51,8 +51,8 @@ defmodule ALTAR.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "priv/docs/202507803_ALTAR_spec_draft.md", "priv/docs/20250803_kiroSpecFinished_NextSteps.md", "priv/docs/specs/altar-protocol/design.md", "priv/docs/specs/altar-protocol/requirements.md", "priv/docs/specs/altar-protocol/tasks.md"],
-      assets: "assets",
+      extras: ["README.md", "LICENSE", "priv/docs/202507803_ALTAR_spec_draft.md", "priv/docs/20250803_kiroSpecFinished_NextSteps.md", "priv/docs/specs/altar-protocol/design.md", "priv/docs/specs/altar-protocol/requirements.md", "priv/docs/specs/altar-protocol/tasks.md"],
+      assets: %{"assets" => "assets"},
       logo: "assets/altar-logo.svg",
       source_ref: "v#{@version}",
       source_url: @source_url,
