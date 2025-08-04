@@ -4,6 +4,9 @@
 # Build artifacts
 /_build/
 
+/doc/
+
+
 # Releases
 /_build/prod/rel/altar/
 
