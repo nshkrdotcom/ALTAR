@@ -53,7 +53,7 @@ The GRID protocol is based on a Host-Runtime architecture, where a central Host 
 
 ```mermaid
 graph LR
-    subgraph C["Client"]
+    subgraph Client["Client"]
         direction TB
         C1[AI Agent]
         C2[Application]
@@ -99,7 +99,7 @@ graph LR
     style C1 fill:#38bdf8,stroke:#2899c8,color:#ffffff
     style C2 fill:#38bdf8,stroke:#2899c8,color:#ffffff
 
-    style C fill: #fff, color: #000
+    style Client fill: #fff, color: #000
     style GH fill: #eff, color: #000
     style GR fill: #fef, color: #000
 ```
