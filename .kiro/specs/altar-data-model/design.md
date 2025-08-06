@@ -394,3 +394,281 @@ The ADM design considers performance implications:
 2. **Minimal Overhead**: Structures include only essential fields
 3. **Streaming Support**: Design allows for future streaming enhancements
 4. **Batch Operations**: Structure supports future batch operation extensions
+
+## Protocol Extension Points
+
+The ADM v1.0 specification is designed with forward compatibility in mind, providing clear extension mechanisms that allow the protocol to evolve while maintaining backward compatibility with existing implementations.
+
+### Extension Philosophy
+
+The ADM follows a conservative extension approach that prioritizes stability and compatibility:
+
+1. **Additive Extensions**: New features are added through new optional fields rather than modifying existing structures
+2. **Namespace Preservation**: Core field names are reserved to prevent conflicts with future extensions
+3. **Version Tolerance**: Implementations must gracefully handle unknown fields from future versions
+4. **Semantic Stability**: Existing field semantics remain unchanged across versions
+
+### Reserved Field Namespaces
+
+To ensure future extensibility without breaking existing implementations, the following field naming conventions are reserved:
+
+#### Core Reserved Prefixes
+- **`adm_`**: Reserved for core ADM protocol extensions
+- **`later_`**: Reserved for LATER protocol-specific extensions
+- **`grid_`**: Reserved for GRID protocol-specific extensions
+- **`x-`**: Reserved for experimental or vendor-specific extensions
+
+#### Structure-Specific Reserved Fields
+
+**Tool Structure Reserved Fields:**
+```json
+{
+  "function_declarations": [...],
+  "adm_version": "1.0",           // Reserved: Protocol version identifier
+  "adm_metadata": {...},          // Reserved: Tool-level metadata
+  "adm_capabilities": [...],      // Reserved: Future capability types beyond functions
+  "adm_extensions": {...}         // Reserved: Generic extension point
+}
+```
+
+**FunctionDeclaration Structure Reserved Fields:**
+```json
+{
+  "name": "function_name",
+  "description": "Function description",
+  "parameters": {...},
+  "adm_deprecated": false,        // Reserved: Deprecation status
+  "adm_version_added": "1.0",     // Reserved: Version tracking
+  "adm_security": {...},          // Reserved: Security annotations
+  "adm_performance": {...}        // Reserved: Performance hints
+}
+```
+
+**Schema Structure Reserved Fields:**
+```json
+{
+  "type": "OBJECT",
+  "description": "Schema description",
+  "properties": {...},
+  "required": [...],
+  "adm_constraints": {...},       // Reserved: Advanced validation rules
+  "adm_format": "email",          // Reserved: Format specifications
+  "adm_examples": [...],          // Reserved: Example values
+  "adm_default": null             // Reserved: Default value specifications
+}
+```
+
+**ToolResult Structure Reserved Fields:**
+```json
+{
+  "name": "function_name",
+  "status": "SUCCESS",
+  "content": {...},
+  "error": {...},
+  "adm_execution_time": 150,      // Reserved: Performance metrics
+  "adm_metadata": {...},          // Reserved: Result metadata
+  "adm_warnings": [...],          // Reserved: Non-fatal warnings
+  "adm_trace_id": "uuid"          // Reserved: Distributed tracing
+}
+```
+
+### Extension Mechanisms
+
+#### 1. Optional Field Extensions
+
+New optional fields can be added to any structure without breaking compatibility:
+
+```json
+{
+  "name": "enhanced_function",
+  "description": "Function with future enhancements",
+  "parameters": {...},
+  "adm_rate_limit": {             // Future extension example
+    "requests_per_minute": 60,
+    "burst_limit": 10
+  },
+  "adm_caching": {                // Future extension example
+    "ttl_seconds": 300,
+    "cache_key_fields": ["location"]
+  }
+}
+```
+
+#### 2. Enumeration Extensions
+
+Enumerations can be extended by adding new values while preserving existing ones:
+
+```json
+{
+  "type": "ENHANCED_STRING",      // Future SchemaType extension
+  "adm_string_format": "regex",   // Future format specification
+  "adm_validation_pattern": "^[A-Z]{2,3}$"
+}
+```
+
+#### 3. Capability Type Extensions
+
+The Tool structure supports future capability types beyond function declarations:
+
+```json
+{
+  "function_declarations": [...],
+  "adm_retrieval_capabilities": [ // Future capability type
+    {
+      "name": "document_search",
+      "description": "Search through document corpus",
+      "index_type": "vector",
+      "supported_formats": ["pdf", "txt", "md"]
+    }
+  ],
+  "adm_streaming_capabilities": [ // Future capability type
+    {
+      "name": "real_time_data",
+      "description": "Stream real-time data updates",
+      "protocol": "websocket",
+      "data_format": "json"
+    }
+  ]
+}
+```
+
+### Compatibility Guidelines
+
+#### Forward Compatibility Requirements
+
+All ADM implementations MUST follow these forward compatibility rules:
+
+1. **Unknown Field Tolerance**: Implementations MUST ignore unknown fields rather than failing
+2. **Graceful Degradation**: When encountering unknown capability types, implementations SHOULD continue processing known types
+3. **Version Negotiation**: Implementations SHOULD support version negotiation when available
+4. **Extension Validation**: Implementations MAY validate known extensions but MUST NOT fail on unknown extensions
+
+#### Backward Compatibility Guarantees
+
+The ADM provides the following backward compatibility guarantees:
+
+1. **Field Semantics**: Existing field meanings will never change
+2. **Required Fields**: Fields marked as required will remain required
+3. **Type Constraints**: Existing type definitions will not be narrowed
+4. **Enumeration Values**: Existing enumeration values will not be removed
+
+#### Implementation Guidelines for Extensions
+
+**Parser Implementation:**
+```pseudocode
+function parseToolResult(json_data) {
+    result = new ToolResult()
+    
+    // Parse required fields
+    result.name = json_data.name
+    result.status = json_data.status
+    
+    // Parse conditional fields based on status
+    if (result.status == SUCCESS) {
+        result.content = json_data.content
+    } else if (result.status == ERROR) {
+        result.error = json_data.error
+    }
+    
+    // Parse known extensions
+    if (json_data.adm_execution_time) {
+        result.execution_time = json_data.adm_execution_time
+    }
+    
+    // Store unknown fields for pass-through
+    result.unknown_fields = {}
+    for (field, value in json_data) {
+        if (!is_known_field(field)) {
+            result.unknown_fields[field] = value
+        }
+    }
+    
+    return result
+}
+```
+
+**Serialization Implementation:**
+```pseudocode
+function serializeToolResult(result) {
+    json_data = {}
+    
+    // Serialize core fields
+    json_data.name = result.name
+    json_data.status = result.status
+    
+    if (result.status == SUCCESS && result.content) {
+        json_data.content = result.content
+    }
+    if (result.status == ERROR && result.error) {
+        json_data.error = result.error
+    }
+    
+    // Serialize known extensions
+    if (result.execution_time) {
+        json_data.adm_execution_time = result.execution_time
+    }
+    
+    // Pass through unknown fields
+    for (field, value in result.unknown_fields) {
+        json_data[field] = value
+    }
+    
+    return json_data
+}
+```
+
+### Version Evolution Strategy
+
+#### Semantic Versioning
+
+The ADM follows semantic versioning (SemVer) principles:
+
+- **Major Version (X.0.0)**: Breaking changes that require implementation updates
+- **Minor Version (1.X.0)**: Backward-compatible feature additions
+- **Patch Version (1.0.X)**: Backward-compatible bug fixes and clarifications
+
+#### Version Negotiation
+
+Future versions of the ADM may include version negotiation mechanisms:
+
+```json
+{
+  "adm_version": "1.2",
+  "adm_supported_versions": ["1.0", "1.1", "1.2"],
+  "function_declarations": [...]
+}
+```
+
+#### Migration Pathways
+
+When breaking changes are necessary, the ADM will provide:
+
+1. **Deprecation Notices**: Clear warnings about upcoming changes
+2. **Migration Guides**: Step-by-step upgrade instructions
+3. **Compatibility Layers**: Temporary support for legacy formats
+4. **Validation Tools**: Automated migration and validation utilities
+
+### Extension Best Practices
+
+#### For Protocol Designers
+
+1. **Minimize Breaking Changes**: Prefer additive changes over modifications
+2. **Use Reserved Namespaces**: Follow established naming conventions
+3. **Document Extensions**: Provide clear specifications for new features
+4. **Test Compatibility**: Verify extensions work with existing implementations
+
+#### For Implementation Authors
+
+1. **Implement Unknown Field Handling**: Store and pass through unrecognized fields
+2. **Validate Conservatively**: Accept unknown extensions gracefully
+3. **Support Version Detection**: Implement version awareness where possible
+4. **Plan for Evolution**: Design internal structures to accommodate future extensions
+
+#### For Tool Developers
+
+1. **Use Standard Fields**: Prefer core ADM fields over custom extensions
+2. **Document Custom Extensions**: Clearly specify any vendor-specific fields
+3. **Test Across Implementations**: Verify tools work with different ADM implementations
+4. **Follow Naming Conventions**: Use appropriate prefixes for custom fields
+
+This extension framework ensures that the ADM can evolve to meet future requirements while maintaining the stability and interoperability that make it valuable as a foundational protocol for the ALTAR ecosystem.
