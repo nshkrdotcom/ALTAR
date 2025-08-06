@@ -144,6 +144,19 @@ ADM data structures use language-neutral type definitions that map consistently 
 - **Range Validation:** Numeric values must fall within the valid range for their declared type (INTEGER vs NUMBER)
 - **Required Fields:** All fields marked as required in Schema definitions must be present in serialized JSON
 
+#### 2.1.4. Language-Specific Type Mappings
+
+To ensure consistent implementation across different programming languages, the following table provides a canonical mapping from ADM's abstract types to common language-specific types. Implementers should adhere to these mappings to maintain cross-language compatibility.
+
+| ADM Type | Python | TypeScript | Go | Notes |
+|----------|--------|------------|----|-------|
+| `STRING` | `str` | `string` | `string` | Should be UTF-8 encoded. |
+| `NUMBER` | `float` | `number` | `float64` | Corresponds to IEEE 754 double-precision. |
+| `INTEGER` | `int` | `number` | `int64` | Should support 64-bit signed integers. TypeScript's `number` can represent integers up to `Number.MAX_SAFE_INTEGER`, beyond which `bigint` may be needed. |
+| `BOOLEAN` | `bool` | `boolean` | `bool` | Represents `true` or `false`. |
+| `ARRAY` | `list` | `any[]` or `T[]` | `[]interface{}` or `[]T` | Represents an ordered collection of items. `T` denotes the type of the elements if homogeneous. |
+| `OBJECT` | `dict` | `{[key: string]: any}` or a defined `interface` | `map[string]interface{}` or a defined `struct` | Represents a key-value map. Keys must be strings. |
+
 ### 2.2. Serialization Rules
 
 The following rules govern how ADM data structures are serialized to and deserialized from JSON format, ensuring consistent behavior across all implementations.
@@ -810,11 +823,11 @@ The `FunctionDeclaration` structure defines individual callable functions within
 - **Type:** String
 - **Required:** Yes
 - **Purpose:** Serves as the function identifier for invocation
-- **Constraints:** 
-  - Must contain only alphanumeric characters (a-z, A-Z, 0-9), underscores (_), and dashes (-)
-  - Maximum length of 64 characters
-  - Must start with a letter or underscore
-  - Must be unique within the containing tool
+- **Constraints:**
+  - **Content:** Must contain only alphanumeric characters (a-z, A-Z, 0-9), underscores (`_`), and dashes (`-`).
+  - **Length:** Maximum of 64 characters.
+  - **Start Character:** Must start with a letter or an underscore.
+  - **Uniqueness:** Must be unique within the containing `Tool`.
 - **Validation:** Must match the pattern `^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$`
 - **Examples:** `get_weather`, `create_user`, `send_email`, `calculate_tax`
 - **Case Sensitivity:** Function names are case-sensitive
@@ -823,11 +836,10 @@ The `FunctionDeclaration` structure defines individual callable functions within
 - **Type:** String
 - **Required:** Yes
 - **Purpose:** Provides context for AI models and human developers
-- **Constraints:** 
-  - Must be non-empty (minimum 1 character after trimming whitespace)
-  - Should be clear and concise (recommended 1-3 sentences)
-  - Should describe what the function does, not how it works
-  - Recommended maximum length of 1000 characters
+- **Constraints:**
+  - **Presence:** Must be a non-empty string (minimum 1 character after trimming whitespace).
+  - **Clarity:** Should be clear, concise, and describe what the function does, not how it works.
+  - **Length:** Recommended maximum of 1000 characters for readability.
 - **Validation:** Cannot be null, undefined, or consist only of whitespace
 - **Best Practices:** Include expected behavior, side effects, and any important limitations
 - **Content Guidelines:** Should be informative enough for AI models to understand function purpose
@@ -2752,56 +2764,57 @@ The `ErrorObject` provides structured error information:
 - **Type:** String
 - **Required:** Yes
 - **Purpose:** Identifies which function produced this result
-- **Constraints:** Must match the name from the corresponding FunctionCall exactly (case-sensitive)
-- **Validation:** Must be non-empty and correspond to a valid function name
-- **Usage:** Enables correlation between calls and responses in batch scenarios
+- **Constraints:**
+  - **Matching:** Must exactly match the `name` from the corresponding `FunctionCall` (case-sensitive).
+  - **Validity:** Must be a non-empty string corresponding to a valid function name.
+- **Usage:** Enables correlation between calls and responses in batch scenarios.
 
 **status**
-- **Type:** ResultStatus enumeration
+- **Type:** `ResultStatus` enumeration
 - **Required:** Yes
-- **Purpose:** Indicates whether the function execution succeeded or failed
-- **Values:** Either "SUCCESS" or "ERROR"
-- **Constraints:** Must be exactly one of the defined ResultStatus values
-- **Validation:** Determines which conditional fields must be present
+- **Purpose:** Indicates whether the function execution succeeded or failed.
+- **Constraints:**
+  - **Value:** Must be one of the `ResultStatus` enumeration values (`SUCCESS` or `ERROR`).
+  - **Implication:** Determines which of the conditional fields (`content` or `error`) must be present.
 
 **content** (conditional)
 - **Type:** JSON-serializable object
-- **Required:** Conditional (Yes when status is "SUCCESS")
-- **Purpose:** Contains the actual result data from successful function execution
-- **Constraints:** Must be JSON-serializable (objects, arrays, primitives, null)
-- **Structure:** Can be any valid JSON structure appropriate for the function's return type
-- **Validation:** Must be absent when status is "ERROR"
-- **Size Limits:** Should be reasonable for transport and processing (implementation-dependent)
+- **Required:** Conditional (Yes when `status` is `SUCCESS`)
+- **Purpose:** Contains the actual result data from successful function execution.
+- **Constraints:**
+  - **Presence:** Required if `status` is `SUCCESS`; must be absent if `status` is `ERROR`.
+  - **Format:** Must be a JSON-serializable object, array, primitive, or null.
+  - **Size:** Should be of a reasonable size for transport and processing (implementation-dependent).
 
 **error** (conditional)
-- **Type:** ErrorObject
-- **Required:** Conditional (Yes when status is "ERROR")
-- **Purpose:** Provides structured error information for failed executions
-- **Constraints:** Must be a valid ErrorObject structure
-- **Validation:** Must be absent when status is "SUCCESS"
-- **Usage:** Enables both human-readable error messages and programmatic error handling
+- **Type:** `ErrorObject`
+- **Required:** Conditional (Yes when `status` is `ERROR`)
+- **Purpose:** Provides structured error information for failed executions.
+- **Constraints:**
+  - **Presence:** Required if `status` is `ERROR`; must be absent if `status` is `SUCCESS`.
+  - **Structure:** Must be a valid `ErrorObject`.
 
 #### 3.5.5. ErrorObject Field Specifications
 
 **message**
 - **Type:** String
 - **Required:** Yes
-- **Purpose:** Human-readable description of what went wrong
-- **Constraints:** Must be non-empty and informative (minimum 1 character after trimming whitespace)
-- **Validation:** Cannot be null, undefined, or consist only of whitespace
-- **Best Practices:** Should be clear, actionable, and safe for AI model consumption
-- **Security:** Should not expose sensitive system information or internal implementation details
-- **Length:** Recommended maximum of 500 characters for practical display purposes
+- **Purpose:** Human-readable description of what went wrong.
+- **Constraints:**
+  - **Presence:** Must be a non-empty and informative string (minimum 1 character after trimming whitespace).
+  - **Security:** Should not expose sensitive system information or internal implementation details.
+  - **Length:** Recommended maximum of 500 characters for practical display purposes.
+- **Best Practices:** Should be clear, actionable, and safe for AI model consumption.
 
 **type**
 - **Type:** String
 - **Required:** No
-- **Purpose:** Standardized error code for programmatic error handling
-- **Constraints:** Should follow consistent naming conventions (e.g., UPPER_SNAKE_CASE)
-- **Examples:** "PARAMETER_VALIDATION_FAILED", "RESOURCE_NOT_FOUND", "PERMISSION_DENIED"
-- **Validation:** When present, should be non-empty and follow standard error type patterns
-- **Usage:** Enables consistent error handling across different function implementations
-- **Extensibility:** New error types can be added without breaking existing implementations
+- **Purpose:** Standardized error code for programmatic error handling.
+- **Constraints:**
+  - **Format:** Should follow a consistent naming convention (e.g., `UPPER_SNAKE_CASE`) when present.
+  - **Extensibility:** New error types can be added without breaking existing implementations.
+- **Examples:** `PARAMETER_VALIDATION_FAILED`, `RESOURCE_NOT_FOUND`, `PERMISSION_DENIED`
+- **Usage:** Enables consistent error handling across different function implementations.
 
 #### 3.5.6. Validation Rules
 
@@ -3855,6 +3868,12 @@ Implementations may add custom extensions following these guidelines:
 - Protocol-specific extensions should not conflict with core ADM
 - Extension namespacing should prevent cross-protocol conflicts
 - Shared extensions should be promoted to core ADM when appropriate
+
+## 5. Conclusion
+
+The ALTAR Data Model (ADM) v1.0 specification provides a robust, language-agnostic foundation for defining and interacting with AI tools. By establishing a universal contract for data structures, the ADM ensures seamless interoperability across the ALTAR ecosystem, from local development with the LATER protocol to distributed production environments with the GRID protocol.
+
+This document serves as the authoritative v1.0 reference for all ADM implementations. Adherence to this specification is essential for ensuring that tools are portable, compatible, and can evolve gracefully within the broader ALTAR architecture.
 
 ---
 
