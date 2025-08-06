@@ -22,31 +22,38 @@ This specification is designed to be the single source of truth for tool structu
 
 The ALTAR ecosystem is built on a three-layer architecture, with the ADM serving as the foundational layer:
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Layer 3: GRID Protocol                  │
-│              Distributed Tool Orchestration                │
-│         Host-Runtime Communication & Enterprise            │
-│              Security & Observability                      │
-└─────────────────────────────────────────────────────────────┘
-                                │
-                                │ imports ADM structures
-                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Layer 2: LATER Protocol                  │
-│                 Local Tool Execution                       │
-│            In-Process Function Calls                       │
-│             Development & Prototyping                      │
-└─────────────────────────────────────────────────────────────┘
-                                │
-                                │ imports ADM structures
-                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                Layer 1: ADM (This Specification)           │
-│              Universal Data Structures                     │
-│           Tool Definitions & Schemas                       │
-│             Function Call Contracts                        │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    %% --- Define Protocol Layers ---
+    L3("
+        <strong>Layer 3: GRID Protocol</strong><br/><br/>
+        Distributed Tool Orchestration<br/>
+        Host-Runtime Communication & Enterprise<br/>
+        Security & Observability
+    ")
+
+    L2("
+        <strong>Layer 2: LATER Protocol</strong><br/><br/>
+        Local Tool Execution<br/>
+        In-Process Function Calls<br/>
+        Development & Prototyping
+    ")
+
+    L1("
+        <strong>Layer 1: ADM (This Specification)</strong><br/><br/>
+        Universal Data Structures<br/>
+        Tool Definitions & Schemas<br/>
+        Function Call Contracts
+    ")
+
+    %% --- Define Connections ---
+    L3 -- imports --> L2
+    L2 -- imports --> L1
+
+    %% --- Professional Hierarchical Styling ---
+    style L3 fill:#42a5f5,stroke:#1e88e5,color:#000000
+    style L2 fill:#1e88e5,stroke:#1565c0,color:#ffffff
+    style L1 fill:#0d47a1,stroke:#002171,color:#ffffff
 ```
 
 **Layer 1 - ALTAR Data Model (ADM):** Defines the universal data structures and contracts for AI tool interactions. This layer is purely structural and contains no execution or transport logic.
