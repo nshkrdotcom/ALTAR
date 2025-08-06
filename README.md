@@ -2,12 +2,12 @@
   <img src="assets/altar-logo.svg" alt="Altar Protocol Logo" width="100%"/>
 </p>
 
-<h1 align="center">The ALTAR Protocol Ecosystem</h1>
+<h1 align="center">The ALTAR Productivity Platform for AI Agents</h1>
 
 <p align="center">
-  <strong>The Open Standard for AI Tool Interoperability</strong>
+  <strong>From Local Development to Enterprise-Grade Production, Seamlessly.</strong>
   <br />
-  <em>A family of specifications for defining, executing, and communicating with AI tools, from simple local functions to secure, distributed enterprise services.</em>
+  <em>ALTAR bridges the gap between the rapid prototyping of open-source AI frameworks and the security, governance, and scale required for enterprise deployment.</em>
 </p>
 
 <p align="center">
@@ -19,11 +19,24 @@
 
 ---
 
-## What is ALTAR?
+## The Challenge: The Gap Between AI Development and Production
 
-ALTAR is an open ecosystem designed to solve a critical problem: **how AI agents and applications reliably and securely use tools.** It provides a unified, language-agnostic framework that scales from a developer's local machine to a complex, multi-cloud enterprise environment.
+The AI agent ecosystem is exploding. Developers love the flexibility and rapid iteration of open-source frameworks like **LangChain**, **Semantic Kernel**, and **CrewAI**. They make it easy to build powerful tools on a local machine.
 
-The ecosystem is built on a modular, three-layer architecture:
+But moving from a local prototype to a secure, scalable, and compliant enterprise application is a massive leap. This creates a costly integration gap where engineering teams spend months building custom infrastructure for:
+
+*   **Security:** How do you prevent a compromised agent from accessing unauthorized tools or data?
+*   **Governance:** How do you enforce access control, audit tool usage, and manage the lifecycle of tool contracts?
+*   **Scalability:** How do you run polyglot tools written in Python, Go, and TypeScript and scale them independently?
+*   **Operations:** How do you manage deployment, observability, and state for distributed AI systems?
+
+This is where ALTAR comes in.
+
+## The Solution: A Seamless Promotion Path
+
+ALTAR is a productivity platform designed to bridge this gap. It provides a seamless **promotion path** for your AI tools, allowing you to move from local development to a distributed, enterprise-grade production environment with a simple configuration change.
+
+Our architecture is designed to facilitate this journey:
 
 ```mermaid
 %%{
@@ -46,44 +59,51 @@ graph TD
     subgraph "The ALTAR Ecosystem"
         direction LR
         
-        subgraph "1\. Data Model"
-            ADM["**ALTAR Data Model (ADM)**<br/><i>The Universal Contract</i><br/>Defines WHAT a tool is."]
+        subgraph "1. Develop Locally"
+            LATER["**LATER Protocol**<br/><i>The Frictionless On-Ramp</i><br/>Build and test tools in-process.<br/>Integrates with your existing frameworks."]
         end
         
-        subgraph "2\. Execution Protocols"
-            direction TB
-            LATER["**LATER Protocol**<br/><i>The Local Runtime</i><br/>Defines HOW to run a tool in-process."]
-            GRID["**GRID Protocol**<br/><i>The Distributed Runtime</i><br/>Defines HOW to run a tool over the network."]
+        subgraph "2. Deploy to Production"
+            GRID["**GRID Protocol**<br/><i>The Secure Backend</i><br/>Run tools on a distributed, secure, and<br/>governed production runtime."]
+        end
+
+        subgraph "Underpinned By"
+            ADM["**ALTAR Data Model (ADM)**<br/><i>The Universal Contract</i><br/>A shared, interoperable schema<br/>that makes the promotion path possible."]
         end
     end
     
-    ADM --> LATER
-    ADM --> GRID
+    LATER -- "Promote with a config change" --> GRID
+    LATER -- "Implements" --> ADM
+    GRID -- "Implements" --> ADM
 
-    style ADM fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
-    style LATER fill:#059669,stroke:#047857,color:#ffffff
-    style GRID fill:#be123c,stroke:#9f1239,color:#ffffff
+    style LATER fill:#059669,stroke:#047857,color:#ffffff,fontWeight:bold
+    style GRID fill:#be123c,stroke:#9f1239,color:#ffffff,fontWeight:bold
+    style ADM fill:#4338ca,stroke:#3730a3,color:#ffffff
 ```
 
-1.  **[ALTAR Data Model (ADM)](specs/01-data-model/README.md)**: The foundation. A simple, powerful specification for defining a tool's capabilities (`FunctionDeclaration`, `Schema`). This is the universal language that ensures a tool defined once can be understood everywhere.
+1.  **[LATER Protocol](specs/02-later-protocol/README.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
 
-2.  **[LATER Protocol](specs/02-later-protocol/README.md)**: For local development. A protocol for exposing functions as tools **within the same application process**. It's designed for simplicity and a "just works" developer experience, perfect for getting started with `gemini_ex` or any LLM client.
+2.  **[GRID Protocol](specs/03-grid-protocol/README.md)**: **The Secure Production Backend.** GRID provides the managed, secure fulfillment layer for your tools. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
 
-3.  **[GRID Protocol](specs/03-grid-protocol/README.md)**: For production and scale. A secure, stateful protocol for executing tools on **remote, distributed runtimes**. It features a Host-centric security model, session management, and an enterprise-grade profile (AESP) for high-compliance environments.
-
-This architecture provides a seamless **promotion path**: a tool you build locally with LATER can be deployed to a distributed GRID runtime without changing its core contract.
+3.  **[ALTAR Data Model (ADM)](specs/01-data-model/README.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
 
 ## Key Features
 
-*   🚀 **Seamless Promotion Path**: Develop tools locally with LATER and deploy them to a distributed GRID runtime with zero changes to the tool's contract.
-*   🛡️ **Secure by Design**: The GRID protocol's Host-managed contract model prevents "Trojan Horse" vulnerabilities by ensuring the central orchestrator is the single source of truth for tool schemas.
-*   🌐 **Language Agnostic**: Define a tool in Python, execute it from Elixir. The protocols are designed for true cross-language interoperability.
+*   🚀 **Seamless Promotion Path**: The core value proposition. Move from a local LATER runtime to a distributed GRID backend by changing a single line of configuration. No code changes required.
+
+*   🤝 **Unmatched Interoperability**: Don't rewrite your existing tools. ALTAR provides bi-directional adapters for popular frameworks like **LangChain** and **Semantic Kernel**, meeting you where you are.
+
+*   🛡️ **Enterprise Security Out-of-the-Box**: GRID's Host-centric security model shifts security from a developer's responsibility to a platform guarantee. With the **Altar Enterprise Security Profile (AESP)**, you get a pre-built control plane for RBAC, audit logging, and policy enforcement.
+
+*   🌐 **Language-Agnostic Scalability**: The GRID protocol allows you to run and scale tool runtimes written in any language (Python, Go, TypeScript, etc.) independently from the host application, optimizing performance and cost.
+
 *   🔍 **Built-in Observability**: First-class support for correlation IDs and metadata enables easy end-to-end tracing across local and distributed calls.
+
 *   📦 **Stateful Sessions**: Isolate context, state, and toolsets for different users or workflows, a critical feature for building robust, multi-turn AI applications.
 
 ## Project Status & Implementations
 
-**The v1.0 specifications for all three layers are complete and ready for implementation.**
+**The v1.0 specifications for all three layers are complete and represent a unified, strategic vision for bridging the development-to-production gap.**
 
 This repository serves as the home for the protocol specifications and the **canonical Elixir implementation** of the ecosystem.
 
@@ -102,7 +122,7 @@ The `runtimes/` directory will contain reference implementations of lightweight 
 
 ## Documentation
 
-The complete protocol specifications can be found in the `specs/` directory.
+The complete protocol specifications can be found in the `specs/` directory. They have been updated to reflect the platform's focus on productivity and interoperability.
 
 *   **[01-data-model/README.md](specs/01-data-model/README.md)**: The core ALTAR Data Model (ADM).
 *   **[02-later-protocol/README.md](specs/02-later-protocol/README.md)**: The LATER protocol for local execution.
@@ -112,5 +132,3 @@ The complete protocol specifications can be found in the `specs/` directory.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
