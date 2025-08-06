@@ -8,15 +8,13 @@
 
 ### 1.1. Purpose and Scope
 
-The ALTAR Data Model (ADM) v1.0 specification defines the foundational, language-agnostic data structures for AI tools and their interactions within the ALTAR ecosystem. This specification serves as the universal contract that enables seamless interoperability between different components of the ALTAR architecture, ensuring that tools defined in one context can be seamlessly promoted or migrated to another without structural changes.
+The ALTAR Data Model (ADM) v1.0 specification **adopts and standardizes** a set of data structures based on established industry patterns (notably Google Gemini's function calling API and OpenAPI 3.0) to serve as a universal, interoperable contract. Its primary purpose is to ensure that a tool defined for one execution environment (e.g., local development) can be **seamlessly promoted** to another (e.g., a secure, distributed production environment) without modification.
 
-The ADM provides the complete data structure definitions for:
-- Tool capability declarations and metadata
-- Function parameter schemas and validation rules
-- Function call request and response formats
-- Error handling and status reporting structures
-
-This specification is designed to be the single source of truth for tool structure definitions across the entire ALTAR ecosystem, replacing and superseding all previous drafts and implementations.
+By aligning with proven, real-world schemas, the ADM provides a reliable and language-agnostic foundation for:
+- Declaring tool capabilities and metadata
+- Defining function parameter schemas and validation rules
+- Structuring function call requests and responses
+- Handling errors and reporting status
 
 ### 1.2. Three-Layer Architecture
 
@@ -80,44 +78,6 @@ The ADM serves as the foundational contract that both LATER and GRID protocols i
 - Tools defined once using ADM structures work in both LATER and GRID environments
 - Migration between local and distributed execution requires no structural changes
 - Consistent data formats enable seamless ecosystem integration
-
-### 1.4. Design Principles
-
-**Industry Compatibility:** All data structures align with established industry patterns, particularly Google Gemini's function calling API and OpenAPI 3.0 specifications, ensuring seamless integration with existing LLM clients and tools.
-
-**Structural Purity:** The ADM defines only data structures and contracts. It contains no references to execution logic, runtimes, sessions, networking, transport, or host-specific concerns. These responsibilities belong to the higher-layer protocols.
-
-**Language Neutrality:** All definitions use universal, language-agnostic terms and JSON serialization, enabling consistent implementation across any programming language.
-
-**Extensibility:** The specification is designed for forward compatibility, allowing future enhancements while maintaining backward compatibility with existing implementations.
-
-**Precision and Clarity:** Every data structure is defined unambiguously with comprehensive field documentation, validation rules, and examples to prevent implementation inconsistencies.
-
-### 1.5. Industry Compatibility
-
-The ADM is designed for seamless integration with existing AI and API ecosystems through alignment with established industry standards.
-
-#### Google Gemini API Compatibility
-
-The ADM data structures align directly with Google Gemini's function calling API:
-
-- **Tool Structure**: The `function_declarations` array maps directly to Gemini's tools format
-- **Function Declarations**: ADM FunctionDeclaration structure matches Gemini's format exactly, with automatic type case conversion (ADM's uppercase `STRING` → Gemini's lowercase `string`)
-- **Function Calls**: ADM FunctionCall structure is directly compatible with Gemini-generated function calls
-- **Response Handling**: ADM ToolResult can be adapted to Gemini's expected response format through simple transformation
-
-This compatibility enables ADM-defined tools to work seamlessly with `gemini_ex` and other Gemini API clients.
-
-#### OpenAPI 3.0 Schema Compliance
-
-The ADM Schema type system implements the core subset of OpenAPI 3.0 JSON Schema Object specification:
-
-- **Core Types**: Full support for all basic types (string, number, integer, boolean, array, object)
-- **Structure**: Implements `properties`, `required`, `items`, and `enum` fields as defined in OpenAPI 3.0
-- **Validation**: Compatible with standard OpenAPI validation tools for supported features
-- **Limitations**: Advanced validation constraints (minLength, maxLength, pattern, format) are not supported in v1.0
-
-This compliance ensures ADM schemas can be validated using standard OpenAPI tooling and integrated into existing API documentation workflows.
 
 ## 2. Serialization Format
 
@@ -196,21 +156,111 @@ The following rules govern how ADM data structures are serialized to and deseria
 - **Precision Preservation:** Numeric precision must be maintained during serialization/deserialization cycles across language boundaries
 - **Validation Consistency:** Schema validation must produce consistent results regardless of the implementing language
 
-## 3. Core Data Structures
+## 3. Rationale for Adoption
+
+The ADM is not a new invention, but a pragmatic **adoption and standardization** of proven, industry-leading data structures. Our rationale is centered on providing a stable, interoperable foundation that maximizes compatibility and accelerates development.
+
+**1. Industry Compatibility (Primary Rationale):** The ADM's core value is its alignment with the existing AI and API ecosystem. By adopting patterns from Google's Gemini API and the OpenAPI 3.0 specification, the ADM ensures that ALTAR tools are immediately familiar and compatible with the technologies developers already use. This choice reduces the learning curve and enables seamless integration with a wide range of LLM clients, API gateways, and validation tools.
+
+**2. Structural Purity for Portability:** The specification strictly defines data structures, deliberately excluding execution logic, networking, or host-specific concerns. This separation is critical for the "promotion path" value proposition, as it guarantees that a tool's contract remains pure and portable between the `LATER` (local) and `GRID` (distributed) protocols.
+
+**3. Language Neutrality via JSON:** By mandating JSON as the canonical serialization format, the ADM ensures that tools and hosts can be implemented in any programming language without compromising compatibility.
+
+**4. Extensibility for Future Growth:** The specification is designed for forward compatibility, allowing new features to be added in future versions without breaking existing implementations.
+
+### 3.1. Interoperability with Existing Frameworks
+
+A key goal of the ADM is to meet developers where they are. ALTAR is designed to integrate with, not replace, popular AI frameworks. The following conceptual examples illustrate how an ADM-compliant schema can be generated from existing tools in frameworks like LangChain and Microsoft's Semantic Kernel.
+
+#### 3.1.1. Conceptual Example: Generating ADM from a LangChain Tool
+
+This example shows how a developer's existing LangChain tool, defined with the `@tool` decorator, could be converted into an ADM-compliant JSON schema using a hypothetical adapter.
+
+```python
+# Developer's existing LangChain tool
+from langchain_core.tools import tool
+
+@tool
+def get_weather(location: str, unit: str = "celsius") -> str:
+  """Gets the current weather for a specified location."""
+  # ... implementation ...
+  return f"The weather in {location} is 25°C."
+
+# Hypothetical ALTAR adapter generates ADM-compliant JSON
+import altar
+
+adm_schema = altar.import_from_langchain(get_weather)
+
+# adm_schema would contain the following JSON structure:
+# {
+#   "function_declarations": [
+#     {
+#       "name": "get_weather",
+#       "description": "Gets the current weather for a specified location.",
+#       "parameters": {
+#         "type": "OBJECT",
+#         "properties": {
+#           "location": {
+#             "type": "STRING",
+#             "description": "The location to get the weather for."
+#           },
+#           "unit": {
+#             "type": "STRING",
+#             "description": "The unit of temperature (e.g., 'celsius' or 'fahrenheit')."
+#           }
+#         },
+#         "required": ["location"]
+#       }
+#     }
+#   ]
+# }
+```
+
+#### 3.1.2. Conceptual Example: Generating ADM from a Semantic Kernel Plugin
+
+This example shows how a C# method in a Semantic Kernel plugin could be introspected to produce an ADM-compliant schema.
+
+```csharp
+// Developer's existing Semantic Kernel plugin
+using Microsoft.SemanticKernel;
+using System.ComponentModel;
+
+public class WeatherPlugin
+{
+    [KernelFunction, Description("Gets the current weather for a city.")]
+    public string GetWeather(
+        [Description("The city name.")] string city,
+        [Description("The temperature unit (e.g., 'celsius' or 'fahrenheit').")] string unit = "celsius"
+    )
+    {
+        // ... implementation ...
+        return $"The weather in {city} is 25°C.";
+    }
+}
+
+// Hypothetical ALTAR adapter generates ADM-compliant JSON
+var admGenerator = new AltarSchemaGenerator();
+var admSchema = admGenerator.ImportFromSKPlugin(new WeatherPlugin());
+
+// The generated schema would be identical to the one in the LangChain example,
+// demonstrating the power of a universal, interoperable standard.
+```
+
+## 4. Core Data Structures
 
 The following sections define the complete set of data structures that form the ADM specification. Each structure includes comprehensive field documentation, validation rules, and practical examples.
 
-### 3.1. Tool Structure
+### 4.1. Tool Structure
 
 The `Tool` structure serves as the top-level container for AI capabilities, providing a standardized way to declare and organize function-based tools within the ALTAR ecosystem.
 
-#### 3.1.1. Structure Definition
+#### 4.1.1. Structure Definition
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `function_declarations` | `FunctionDeclaration[]` | Yes | Array of function declarations that define the capabilities provided by this tool |
 
-#### 3.1.2. Field Specifications
+#### 4.1.2. Field Specifications
 
 **function_declarations**
 - **Type:** Array of `FunctionDeclaration` objects
@@ -227,14 +277,14 @@ The `Tool` structure serves as the top-level container for AI capabilities, prov
 - **Extensibility:** Future versions may add additional capability types (e.g., retrieval, search) alongside function declarations
 - **Structure:** Maintains order as defined, though order is not semantically significant
 
-#### 3.1.3. Validation Rules
+#### 4.1.3. Validation Rules
 
 1. The `function_declarations` array must not be empty
 2. Each element in the array must be a valid `FunctionDeclaration` object
 3. Function names within a single tool must be unique
 4. The tool structure must be serializable to valid JSON
 
-#### 3.1.4. JSON Schema Representation
+#### 4.1.4. JSON Schema Representation
 
 ```json
 {
@@ -254,7 +304,7 @@ The `Tool` structure serves as the top-level container for AI capabilities, prov
 }
 ```
 
-#### 3.1.5. Examples
+#### 4.1.5. Examples
 
 **Simple Tool with Single Function**
 ```json
@@ -785,7 +835,7 @@ The `Tool` structure serves as the top-level container for AI capabilities, prov
 }
 ```
 
-#### 3.1.6. Design Rationale
+#### 4.1.6. Design Rationale
 
 The Tool structure is intentionally minimal and extensible:
 
@@ -795,7 +845,7 @@ The Tool structure is intentionally minimal and extensible:
 4. **Future Extensibility:** Additional fields can be added (e.g., `retrieval_declarations`, `search_declarations`) without breaking existing implementations
 5. **Namespace Isolation:** Each tool maintains its own namespace of function names, preventing conflicts
 
-#### 3.1.7. Implementation Notes
+#### 4.1.7. Implementation Notes
 
 **Language-Specific Considerations:**
 - In strongly-typed languages, implement as a class or struct with appropriate field types
@@ -812,11 +862,11 @@ The Tool structure is intentionally minimal and extensible:
 - Validation errors should specify which function declaration failed and why
 - Tools with duplicate function names should be rejected during validation
 
-### 3.2. FunctionDeclaration Structure
+### 4.2. FunctionDeclaration Structure
 
 The `FunctionDeclaration` structure defines individual callable functions within a tool, specifying their interface, parameters, and behavior contract.
 
-#### 3.2.1. Structure Definition
+#### 4.2.1. Structure Definition
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -824,7 +874,7 @@ The `FunctionDeclaration` structure defines individual callable functions within
 | `description` | `String` | Yes | Human-readable description of the function's purpose and behavior |
 | `parameters` | `Schema` | Yes | Schema object defining the function's input parameters |
 
-#### 3.2.2. Field Specifications
+#### 4.2.2. Field Specifications
 
 **name**
 - **Type:** String
@@ -860,7 +910,7 @@ The `FunctionDeclaration` structure defines individual callable functions within
 - **Note:** Even functions with no parameters must include a parameters field with an empty OBJECT schema
 - **Structure:** Root schema should typically be of type "OBJECT" to define named parameters
 
-#### 3.2.3. Validation Rules
+#### 4.2.3. Validation Rules
 
 1. **Name Validation:**
    - Must match the pattern: `^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$`
@@ -876,7 +926,7 @@ The `FunctionDeclaration` structure defines individual callable functions within
    - Root schema should typically be of type "OBJECT"
    - All nested schemas must be valid
 
-#### 3.2.4. JSON Schema Representation
+#### 4.2.4. JSON Schema Representation
 
 ```json
 {
@@ -903,7 +953,7 @@ The `FunctionDeclaration` structure defines individual callable functions within
 }
 ```
 
-#### 3.2.5. Examples
+#### 4.2.5. Examples
 
 **Simple Function with Basic Parameters**
 ```json
@@ -1137,7 +1187,7 @@ The `FunctionDeclaration` structure defines individual callable functions within
 }
 ```
 
-#### 3.2.6. Design Rationale
+#### 4.2.6. Design Rationale
 
 The FunctionDeclaration structure balances simplicity with comprehensive functionality:
 
@@ -1147,7 +1197,7 @@ The FunctionDeclaration structure balances simplicity with comprehensive functio
 4. **AI-Friendly:** Clear descriptions help AI models understand function capabilities
 5. **Developer Experience:** Comprehensive examples and validation rules reduce implementation errors
 
-#### 3.2.7. Implementation Notes
+#### 4.2.7. Implementation Notes
 
 **Name Validation Implementation:**
 ```javascript
@@ -1172,11 +1222,11 @@ function validateFunctionName(name) {
 - Consider backward compatibility when evolving function signatures
 - Validate all inputs thoroughly before processing
 
-### 3.3. Schema Type System
+### 4.3. Schema Type System
 
 The Schema type system provides a comprehensive, recursive structure for defining and validating data types within function parameters. Based on OpenAPI 3.0 specifications, it supports both primitive and complex data types with full validation capabilities.
 
-#### 3.3.1. Schema Structure Definition
+#### 4.3.1. Schema Structure Definition
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -1187,7 +1237,7 @@ The Schema type system provides a comprehensive, recursive structure for definin
 | `items` | `Schema` | No | Schema for array elements (required when type is ARRAY) |
 | `enum` | `String[]` | No | Array of allowed string values (used with STRING type) |
 
-#### 3.3.2. SchemaType Enumeration
+#### 4.3.2. SchemaType Enumeration
 
 The `SchemaType` enumeration defines the supported data types:
 
@@ -1200,7 +1250,7 @@ The `SchemaType` enumeration defines the supported data types:
 | `ARRAY` | Ordered collection of elements | `"ARRAY"` | Must have `items` field defining element schema |
 | `OBJECT` | Key-value map with structured properties | `"OBJECT"` | May have `properties` and `required` fields |
 
-#### 3.3.3. Field Specifications
+#### 4.3.3. Field Specifications
 
 **type**
 - **Type:** SchemaType enumeration value
@@ -1251,7 +1301,7 @@ The `SchemaType` enumeration defines the supported data types:
 - **Constraints:** Must contain at least one value, all values must be unique strings
 - **Validation:** Input must exactly match one of the enum values (case-sensitive)
 
-#### 3.3.4. Recursive Schema Support
+#### 4.3.4. Recursive Schema Support
 
 The Schema system supports unlimited nesting depth, enabling complex data structures:
 
@@ -1292,7 +1342,7 @@ The Schema system supports unlimited nesting depth, enabling complex data struct
 }
 ```
 
-#### 3.3.5. JSON Schema Representation
+#### 4.3.5. JSON Schema Representation
 
 ```json
 {
@@ -1338,7 +1388,7 @@ The Schema system supports unlimited nesting depth, enabling complex data struct
 }
 ```
 
-#### 3.3.6. Examples
+#### 4.3.6. Examples
 
 **Primitive Type Schemas**
 
@@ -1903,7 +1953,7 @@ The Schema system supports unlimited nesting depth, enabling complex data struct
 }
 ```
 
-#### 3.3.7. Validation Rules
+#### 4.3.7. Validation Rules
 
 **Type-Specific Validation:**
 
@@ -1941,7 +1991,7 @@ The Schema system supports unlimited nesting depth, enabling complex data struct
 - `enum` field is only valid for STRING types
 - Recursive schemas must not create infinite loops
 
-#### 3.3.8. Design Rationale
+#### 4.3.8. Design Rationale
 
 The Schema type system design prioritizes:
 
@@ -1951,7 +2001,7 @@ The Schema type system design prioritizes:
 4. **Validation Clarity:** Unambiguous rules for data validation
 5. **Industry Standards:** Uses established patterns from JSON Schema specification
 
-#### 3.3.9. Implementation Notes
+#### 4.3.9. Implementation Notes
 
 **Validation Algorithm:**
 ```javascript
@@ -2009,18 +2059,18 @@ function validateSchema(data, schema) {
 - Support schema composition and inheritance for complex scenarios
 - Consider implementing schema versioning for backward compatibility
 
-### 3.4. FunctionCall Structure
+### 4.4. FunctionCall Structure
 
 The `FunctionCall` structure represents a request to invoke a specific function within a tool, containing the function name and its arguments. This structure is used by AI models to request tool execution and must reference a function declared in the corresponding Tool's function_declarations.
 
-#### 3.4.1. Structure Definition
+#### 4.4.1. Structure Definition
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | `String` | Yes | Name of the function to invoke, must match a FunctionDeclaration name |
 | `args` | `Map<String, Any>` | Yes | Arguments to pass to the function, must conform to the function's parameter schema |
 
-#### 3.4.2. Field Specifications
+#### 4.4.2. Field Specifications
 
 **name**
 - **Type:** String
@@ -2049,7 +2099,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 - **Purpose:** Provides the input data for function execution
 - **Serialization:** Must be JSON-serializable (strings, numbers, booleans, arrays, objects, null)
 
-#### 3.4.3. Validation Rules
+#### 4.4.3. Validation Rules
 
 1. **Function Reference Validation:**
    - The `name` field must reference an existing FunctionDeclaration in the associated Tool
@@ -2066,7 +2116,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
    - Complex objects must conform to their nested schema definitions
    - Arrays must contain elements of the correct type as defined in the schema
 
-#### 3.4.4. JSON Schema Representation
+#### 4.4.4. JSON Schema Representation
 
 ```json
 {
@@ -2087,7 +2137,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 }
 ```
 
-#### 3.4.5. Examples
+#### 4.4.5. Examples
 
 **Simple Function Call with Basic Parameters**
 ```json
@@ -2211,7 +2261,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 }
 ```
 
-#### 3.4.6. Parameter Type Examples
+#### 4.4.6. Parameter Type Examples
 
 **STRING Parameters**
 ```json
@@ -2690,7 +2740,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 }
 ```
 
-#### 3.4.7. Design Rationale
+#### 4.4.7. Design Rationale
 
 The FunctionCall structure design emphasizes:
 
@@ -2700,7 +2750,7 @@ The FunctionCall structure design emphasizes:
 4. **JSON Serialization:** All arguments must be JSON-serializable for cross-language compatibility
 5. **Validation Clarity:** Clear rules for parameter validation and function reference checking
 
-#### 3.4.8. Implementation Notes
+#### 4.4.8. Implementation Notes
 
 **Validation Implementation:**
 ```javascript
@@ -2734,11 +2784,11 @@ function validateFunctionCall(functionCall, tool) {
 - Consider parameter sanitization for security
 - Log function calls for debugging and audit purposes
 
-### 3.5. ToolResult Structure
+### 4.5. ToolResult Structure
 
 The `ToolResult` structure represents the response from a function call execution, using a discriminated union pattern to handle both successful results and error conditions in a type-safe manner. This unified structure replaces separate response and error types, providing unambiguous result handling.
 
-#### 3.5.1. Structure Definition
+#### 4.5.1. Structure Definition
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -2747,7 +2797,7 @@ The `ToolResult` structure represents the response from a function call executio
 | `content` | `Object` | Conditional | Result data (required when status is SUCCESS) |
 | `error` | `ErrorObject` | Conditional | Error information (required when status is ERROR) |
 
-#### 3.5.2. ResultStatus Enumeration
+#### 4.5.2. ResultStatus Enumeration
 
 The `ResultStatus` enumeration defines the possible execution outcomes:
 
@@ -2756,7 +2806,7 @@ The `ResultStatus` enumeration defines the possible execution outcomes:
 | `SUCCESS` | Function executed successfully | `content` field must be present |
 | `ERROR` | Function execution failed | `error` field must be present |
 
-#### 3.5.3. ErrorObject Structure
+#### 4.5.3. ErrorObject Structure
 
 The `ErrorObject` provides structured error information:
 
@@ -2765,7 +2815,7 @@ The `ErrorObject` provides structured error information:
 | `message` | `String` | Yes | Human-readable error description |
 | `type` | `String` | No | Standardized error code for programmatic handling |
 
-#### 3.5.4. Field Specifications
+#### 4.5.4. Field Specifications
 
 **name**
 - **Type:** String
@@ -2801,7 +2851,7 @@ The `ErrorObject` provides structured error information:
   - **Presence:** Required if `status` is `ERROR`; must be absent if `status` is `SUCCESS`.
   - **Structure:** Must be a valid `ErrorObject`.
 
-#### 3.5.5. ErrorObject Field Specifications
+#### 4.5.5. ErrorObject Field Specifications
 
 **message**
 - **Type:** String
@@ -2823,7 +2873,7 @@ The `ErrorObject` provides structured error information:
 - **Examples:** `PARAMETER_VALIDATION_FAILED`, `RESOURCE_NOT_FOUND`, `PERMISSION_DENIED`
 - **Usage:** Enables consistent error handling across different function implementations.
 
-#### 3.5.6. Validation Rules
+#### 4.5.6. Validation Rules
 
 1. **Discriminated Union Validation:**
    - When status is "SUCCESS", the `content` field must be present and `error` field must be absent
@@ -2840,7 +2890,7 @@ The `ErrorObject` provides structured error information:
    - Error type, if present, should follow consistent naming conventions
    - Error information should not expose sensitive system details
 
-#### 3.5.7. JSON Schema Representation
+#### 4.5.7. JSON Schema Representation
 
 ```json
 {
@@ -2898,7 +2948,7 @@ The `ErrorObject` provides structured error information:
 }
 ```
 
-#### 3.5.8. Examples
+#### 4.5.8. Examples
 
 **Successful Function Execution with Simple Result**
 ```json
@@ -3512,7 +3562,7 @@ The `ErrorObject` provides structured error information:
 }
 ```
 
-#### 3.5.9. Common Error Types
+#### 4.5.9. Common Error Types
 
 The following standardized error types are recommended for consistent error handling:
 
@@ -3527,7 +3577,7 @@ The following standardized error types are recommended for consistent error hand
 | `INVALID_STATE` | Resource in invalid state for operation | Account suspended, order already shipped |
 | `CONFIGURATION_ERROR` | System configuration issue | Missing API keys, invalid settings |
 
-#### 3.5.10. Design Rationale
+#### 4.5.10. Design Rationale
 
 The ToolResult discriminated union design provides:
 
@@ -3537,7 +3587,7 @@ The ToolResult discriminated union design provides:
 4. **Debugging:** Function name correlation enables tracing in complex execution scenarios
 5. **AI-Friendly:** Structured errors provide clear feedback for AI model learning and adaptation
 
-#### 3.5.11. Implementation Notes
+#### 4.5.11. Implementation Notes
 
 **Discriminated Union Validation:**
 ```javascript
@@ -3598,13 +3648,13 @@ function handleToolResult(result) {
 - Consider implementing retry logic based on error types
 - Log both successful and failed function executions for monitoring
 
-## 4. Protocol Versioning and Evolution
+## 5. Protocol Versioning and Evolution
 
-### 4.1. Versioning Strategy
+### 5.1. Versioning Strategy
 
 The ALTAR Data Model (ADM) follows a semantic versioning approach to ensure predictable evolution while maintaining backward compatibility across the ecosystem. This strategy provides clear guidelines for implementers and consumers of the specification.
 
-#### 4.1.1. Semantic Versioning
+#### 5.1.1. Semantic Versioning
 
 The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 
@@ -3614,7 +3664,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 
 **Current Version:** 1.0.0
 
-#### 4.1.2. Version Compatibility Matrix
+#### 5.1.2. Version Compatibility Matrix
 
 | Version Change | Compatibility | Description | Examples |
 |----------------|---------------|-------------|----------|
@@ -3622,7 +3672,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 | MINOR (1.0.0 → 1.1.0) | Backward compatible | New optional fields, additional enum values, new data structures | Adding optional metadata fields, new SchemaType values |
 | MAJOR (1.0.0 → 2.0.0) | Breaking changes | Required field changes, field removals, type changes | Changing required fields, removing deprecated structures |
 
-#### 4.1.3. Backward Compatibility Guarantees
+#### 5.1.3. Backward Compatibility Guarantees
 
 **PATCH Version Guarantees:**
 - All existing data structures remain unchanged
@@ -3646,7 +3696,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 - May introduce incompatible serialization changes
 - Requires explicit migration planning
 
-#### 4.1.4. Deprecation and Migration Policies
+#### 5.1.4. Deprecation and Migration Policies
 
 **Deprecation Process:**
 1. **Announcement:** Deprecated features are marked in documentation with deprecation notices
@@ -3665,7 +3715,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 - **Validation:** Tools to validate compatibility between versions
 - **Testing:** Reference test suites to verify migration correctness
 
-#### 4.1.5. Version Declaration and Discovery
+#### 5.1.5. Version Declaration and Discovery
 
 **Specification Versioning:**
 - Each specification document includes version information in the header
@@ -3682,7 +3732,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 - Implementations should support the highest mutually compatible version
 - Fallback to lower versions should maintain functional compatibility
 
-#### 4.1.6. Change Management Process
+#### 5.1.6. Change Management Process
 
 **Specification Changes:**
 1. **Proposal:** Changes proposed through formal specification process
@@ -3704,11 +3754,11 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 - **Stakeholder Review:** Input from LATER and GRID protocol maintainers
 - **Implementation Feedback:** Testing and feedback from reference implementations
 
-### 4.2. Extension Points and Future Evolution
+### 5.2. Extension Points and Future Evolution
 
 The ADM specification is designed with strategic extension points that enable future enhancements while maintaining backward compatibility. These extension points provide controlled expansion paths for new capabilities without disrupting existing implementations.
 
-#### 4.2.1. Structural Extension Points
+#### 5.2.1. Structural Extension Points
 
 **Tool Structure Extensions:**
 The `Tool` structure is designed for extensibility beyond function declarations:
@@ -3759,7 +3809,7 @@ The discriminated union pattern supports additional result types:
 }
 ```
 
-#### 4.2.2. Reserved Fields and Namespaces
+#### 5.2.2. Reserved Fields and Namespaces
 
 **Reserved Field Names:**
 The following field names are reserved for future use across all data structures:
@@ -3778,7 +3828,7 @@ The following field names are reserved for future use across all data structures
 - **Vendor Extensions:** `vendor_name_*` prefix for vendor-specific additions
 - **Experimental:** `x_*` prefix for experimental features
 
-#### 4.2.3. Extension Guidelines
+#### 5.2.3. Extension Guidelines
 
 **Backward Compatibility Requirements:**
 1. **Additive Only:** Extensions must only add new optional fields or structures
@@ -3798,7 +3848,7 @@ The following field names are reserved for future use across all data structures
 3. **Migration:** Clear migration path from non-extended to extended versions
 4. **Testing:** Test suites validating extension behavior and compatibility
 
-#### 4.2.4. Future Capability Roadmap
+#### 5.2.4. Future Capability Roadmap
 
 **Planned Extensions (Future Versions):**
 
@@ -3826,7 +3876,7 @@ The following field names are reserved for future use across all data structures
 - Media type handling
 - Workflow composition primitives
 
-#### 4.2.5. Implementation Extension Guidelines
+#### 5.2.5. Implementation Extension Guidelines
 
 **Custom Extensions:**
 Implementations may add custom extensions following these guidelines:
@@ -3856,27 +3906,13 @@ Implementations may add custom extensions following these guidelines:
 - Version compatibility should include extension compatibility
 - Fallback behavior should be defined for unsupported extensions
 
-#### 4.2.6. Compatibility During Evolution
-
-**Forward Compatibility:**
-- Current implementations should handle future extensions gracefully
-- Unknown fields should be preserved and ignored
-- Core functionality should remain unaffected by extensions
-- Serialization should maintain unknown fields
-
-**Backward Compatibility:**
-- New versions should support older data formats
-- Extension removal should follow deprecation process
-- Migration tools should handle extension changes
-- Legacy support should be maintained for reasonable periods
-
 **Cross-Protocol Compatibility:**
 - Extensions should consider LATER and GRID protocol needs
 - Protocol-specific extensions should not conflict with core ADM
 - Extension namespacing should prevent cross-protocol conflicts
 - Shared extensions should be promoted to core ADM when appropriate
 
-## 5. Conclusion
+## 6. Conclusion
 
 The ALTAR Data Model (ADM) v1.0 specification provides a robust, language-agnostic foundation for defining and interacting with AI tools. By establishing a universal contract for data structures, the ADM ensures seamless interoperability across the ALTAR ecosystem, from local development with the LATER protocol to distributed production environments with the GRID protocol.
 
