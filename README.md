@@ -57,13 +57,12 @@ Our architecture is designed to facilitate this journey:
 }%%
 graph TD
     subgraph "The ALTAR Ecosystem"
-        direction LR
         
-        subgraph "1. Develop Locally"
+        subgraph "1\. Develop Locally"
             LATER["**LATER Protocol**<br/><i>The Frictionless On-Ramp</i><br/>Build and test tools in-process.<br/>Integrates with your existing frameworks."]
         end
         
-        subgraph "2. Deploy to Production"
+        subgraph "2\. Deploy to Production"
             GRID["**GRID Protocol**<br/><i>The Secure Backend</i><br/>Run tools on a distributed, secure, and<br/>governed production runtime."]
         end
 
