@@ -22,7 +22,7 @@ LATER is the second layer in the three-layer ALTAR architecture, positioned betw
 
 ```mermaid
 graph TB
-    subgraph ALTAR Ecosystem
+    subgraph AE["ALTAR Ecosystem"]
         L3("
             <strong>Layer 3: GRID Protocol</strong><br/><br/>
             Distributed Tool Orchestration<br/>
@@ -50,6 +50,7 @@ graph TB
     L2 -- implements --> L1
 
     %% --- Styling ---
+    style AE fill: #FFF,color:#000
     style L3 fill:#42a5f5,stroke:#1e88e5,color:#000000
     style L2 fill:#1e88e5,stroke:#1565c0,color:#ffffff
     style L1 fill:#0d47a1,stroke:#002171,color:#ffffff

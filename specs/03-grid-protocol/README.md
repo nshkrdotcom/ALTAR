@@ -21,17 +21,17 @@ GRID is the third layer of the three-layer ALTAR architecture, building upon the
 
 ```mermaid
 graph TB
-    subgraph L3 [Layer 3: GRID Protocol (This Specification)]
+    subgraph L3["Layer&nbsp;3:&nbsp;GRID&nbsp;Protocol&nbsp;(This&nbsp;Specification)"]
         direction TB
         A["<strong>Distributed Tool Orchestration</strong><br/>Host-Runtime Communication<br/>Enterprise Security & Observability"]
     end
 
-    subgraph L2 [Layer 2: LATER Protocol]
+    subgraph L2["Layer&nbsp;2:&nbsp;LATER&nbsp;Protocol"]
         direction TB
         B["<strong>Local Tool Execution</strong><br/>In-Process Function Calls<br/>Development & Prototyping"]
     end
 
-    subgraph L1 [Layer 1: ADM]
+    subgraph L1["Layer&nbsp;1:&nbsp;ADM"]
         direction TB
         C["<strong>ALTAR Data Model (ADM)</strong><br/>Universal Data Structures<br/>Tool Definitions & Schemas<br/>Function Call Contracts"]
     end
@@ -53,13 +53,13 @@ The GRID protocol is based on a Host-Runtime architecture, where a central Host 
 
 ```mermaid
 graph LR
-    subgraph Client
+    subgraph C["Client"]
         direction TB
         C1[AI Agent]
         C2[Application]
     end
 
-    subgraph "GRID Host"
+    subgraph GH["GRID&nbsp;Host"]
         direction TB
         H[Host Process]
         R[Tool Registry]
@@ -68,29 +68,29 @@ graph LR
         H --- R & S & A
     end
 
-    subgraph "GRID Runtimes"
+    subgraph GR["GRID&nbsp;Runtimes"]
         direction TB
-        RT1[Runtime A<br/>(Python)]
-        RT2[Runtime B<br/>(Go)]
-        RT3[Runtime C<br/>(Node.js)]
+        RT1["Runtime A<br/>(Python)"]
+        RT2["Runtime B<br/>(Go)"]
+        RT3["Runtime C<br/>(Node.js)"]
     end
 
-    Client -- "1. CreateSession()" --> H
-    Client -- "4. ToolCall(call)" --> H
+    Client -- "1\. CreateSession()" --> H
+    Client -- "4\. ToolCall(call)" --> H
 
-    H -- "2. AnnounceRuntime()" --> RT1
-    H -- "2. AnnounceRuntime()" --> RT2
-    H -- "2. AnnounceRuntime()" --> RT3
+    H -- "2\. AnnounceRuntime()" --> RT1
+    H -- "2\. AnnounceRuntime()" --> RT2
+    H -- "2\. AnnounceRuntime()" --> RT3
 
-    RT1 -- "3. FulfillTools()" --> H
-    RT2 -- "3. FulfillTools()" --> H
-    RT3 -- "3. FulfillTools()" --> H
+    RT1 -- "3\. FulfillTools()" --> H
+    RT2 -- "3\. FulfillTools()" --> H
+    RT3 -- "3\. FulfillTools()" --> H
 
-    H -- "5. ToolCall(call)" --> RT2
+    H -- "5\. ToolCall(call)" --> RT2
 
-    RT2 -- "6. ToolResult(result)" --> H
+    RT2 -- "6\. ToolResult(result)" --> H
 
-    H -- "7. ToolResult(result)" --> Client
+    H -- "7\. ToolResult(result)" --> Client
 
     style H fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
     style RT1 fill:#34d399,stroke:#25a274,color:#ffffff
@@ -98,6 +98,10 @@ graph LR
     style RT3 fill:#34d399,stroke:#25a274,color:#ffffff
     style C1 fill:#38bdf8,stroke:#2899c8,color:#ffffff
     style C2 fill:#38bdf8,stroke:#2899c8,color:#ffffff
+
+    style C fill: #fff, color: #000
+    style GH fill: #eff, color: #000
+    style GR fill: #fef, color: #000
 ```
 
 -   **Client:** Any application or agent that needs to invoke tools. The Client communicates only with the Host.

@@ -26,8 +26,8 @@ To achieve AESP compliance, a GRID Host must be implemented as part of a compreh
 
 ```mermaid
 graph TB
-    subgraph "Enterprise Security Perimeter"
-        subgraph "AESP Control Plane"
+    subgraph ESP["Enterprise&nbsp;Security&nbsp;Perimeter"]
+        subgraph ACP["AESP&nbsp;Control&nbsp;Plane"]
             direction TB
             GATEWAY[API Gateway]
             HOST[AESP Host Cluster]
@@ -54,7 +54,7 @@ graph TB
             style CONFIG fill:#10b981,stroke:#059669,color:#ffffff
         end
         
-        subgraph "Enterprise Identity Layer"
+        subgraph EIL["Enterprise&nbsp;Identity&nbsp;Layer"]
             direction LR
             LDAP[LDAP/AD]
             SAML[SAML IdP]
@@ -62,7 +62,7 @@ graph TB
             PKI[Enterprise PKI]
         end
         
-        subgraph "Secure Runtime Environment"
+        subgraph SRE["Secure&nbsp;Runtime&nbsp;Environment"]
             direction TB
             RT1[Python Runtime<br/>Tenant A]
             RT2[Java Runtime<br/>Tenant B]
@@ -75,6 +75,11 @@ graph TB
     RBAC --> LDAP & SAML & OAUTH
     HOST -.->|mTLS| RT1
     HOST -.->|mTLS| RT2
+    style ESP fill: #fff, color: #000
+    style ACP fill: #efe, color: #000
+    style EIL fill: #fef, color: #000
+    style SRE fill: #eff, color: #000
+
 ```
 
 ### 2.1. Mandated Components
