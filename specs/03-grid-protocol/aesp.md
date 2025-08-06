@@ -1,231 +1,221 @@
 # AESP (ALTAR Enterprise Security Protocol) Profile v1.0
 
-**Version:** 1.0.0
+**Version:** 1.0
 **Status:** Final
-**Profiles:** [GRID Protocol v1.0](./README.md)
+**Defines:** GRID Protocol Level 3 Enterprise Compliance
 
 ## 1. Introduction
 
 ### 1.1. Overview
 
-The AESP (ALTAR Enterprise Security Protocol) Profile defines a set of extensions, replacements, and mandatory components for the base GRID protocol to meet the stringent security, governance, and compliance requirements of enterprise environments. An AESP-compliant system represents a **Level 3 (Enterprise Compliance)** implementation of the GRID protocol.
+This document defines the **AESP (ALTAR Enterprise Security Protocol) Profile v1.0**. AESP is not a standalone protocol; it is a formal profile of the [GRID Protocol](./README.md) that specifies the mandatory architectural components, message extensions, and security controls required to achieve **Level 3 Enterprise Compliance**.
 
-This profile transforms the flexible, general-purpose GRID protocol into a hardened, auditable, and fully governable platform for orchestrating AI agents within strict organizational boundaries.
+The primary purpose of AESP is to elevate the core GRID protocol to meet the stringent demands of enterprise environments. Where GRID provides a robust foundation for distributed tool orchestration, AESP layers on the critical features of **security, governance, and compliance**. An AESP-compliant system is, by definition, a GRID-compliant system that has been hardened and extended for high-stakes, regulated deployments.
 
-### 1.2. Relationship to the GRID Protocol
+### 1.2. Relationship to GRID
 
-AESP is not a separate protocol; it is a **strict profile of GRID**. It operates on the same Host-Runtime architecture and follows the same fundamental interaction flows. However, it achieves its enterprise-grade posture through three key mechanisms:
+AESP extends the GRID protocol through three primary mechanisms, ensuring that an AESP-compliant Host remains interoperable with the core principles of GRID while enforcing stricter enterprise-grade controls.
 
-1.  **Message Replacement:** AESP defines enhanced, enterprise-specific messages (e.g., `EnterpriseSecurityContext`) that **replace** their base GRID counterparts. These messages carry the additional metadata required for advanced security and governance.
-2.  **Component Mandates:** AESP mandates the implementation of specific server-side components within the Host (e.g., `RBAC Engine`, `Audit Manager`) that are optional in a base GRID implementation.
-3.  **Stricter Security Requirements:** AESP enforces stricter security controls, such as mandatory mTLS and integration with enterprise identity providers.
+*   **Component Mandates:** AESP mandates the implementation of a specific **Control Plane** architecture. A standard GRID Host is extended with required services for identity, policy, audit, and more, which become integral to its operation.
+*   **Message Replacement:** AESP selectively replaces certain base GRID protocol messages with enterprise-specific counterparts. These extended messages (e.g., `EnterpriseSecurityContext`) are supersets of the base messages, carrying additional data required for fine-grained policy enforcement, auditability, and governance.
+*   **Stricter Security:** AESP elevates GRID's security posture from a recommendation to a requirement. It mandates specific security controls, such as mTLS 1.3+ for all transport, integration with enterprise identity providers (IdPs), and the maintenance of an immutable audit log.
 
 ## 2. AESP Architecture: The Control Plane Model
 
-An AESP-compliant Host is not a single process, but a collection of coordinated microservices known as the **AESP Control Plane**. This architecture ensures scalability, resilience, and a clear separation of concerns for all enterprise functions.
+To achieve AESP compliance, a GRID Host must be implemented as part of a comprehensive **AESP Control Plane**. This architecture provides the centralized management, security, and governance functions required for enterprise operations.
 
 ```mermaid
 graph TB
-    subgraph ACP["AESP Control Plane"]
-        GATEWAY[API Gateway]
-        HOST[GRID Host Cluster]
-        
-        subgraph SI["Security & Identity"]
-            RBAC[RBAC Engine]
-            IM[Identity Manager]
-            PE[Policy Engine]
-        end
-        
-        subgraph OG["Operations & Governance"]
+    subgraph "Enterprise Security Perimeter"
+        subgraph "AESP Control Plane"
+            direction TB
+            GATEWAY[API Gateway]
+            HOST[AESP Host Cluster]
             SM[Session Manager]
-            TM[Tenant Manager]
+            RBAC[RBAC Engine]
+            PE[Policy Engine]
             AM[Audit Manager]
-            GM[Governance Manager]
-        end
-        
-        subgraph FC["Financial & Configuration"]
+            TM[Tenant Manager]
             CM[Cost Manager]
+            GM[Governance Manager]
+            IM[Identity Manager]
             CONFIG[Configuration Manager]
+
+            style GATEWAY fill:#1f2937,stroke:#111827,color:#ffffff,fontWeight:bold
+            style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff,fontWeight:bold
+            style SM fill:#e2e8f0,stroke:#cbd5e1,color:#475569
+            style RBAC fill:#dc2626,stroke:#b91c1c,color:#ffffff
+            style PE fill:#dc2626,stroke:#b91c1c,color:#ffffff
+            style AM fill:#059669,stroke:#047857,color:#ffffff
+            style TM fill:#7c3aed,stroke:#6d28d9,color:#ffffff
+            style CM fill:#f59e0b,stroke:#d97706,color:#ffffff
+            style GM fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
+            style IM fill:#06b6d4,stroke:#0891b2,color:#ffffff
+            style CONFIG fill:#10b981,stroke:#059669,color:#ffffff
         end
         
-        GATEWAY --> HOST
-        HOST --> SM & RBAC & PE & AM & TM & CM & GM & IM & CONFIG
+        subgraph "Enterprise Identity Layer"
+            direction LR
+            LDAP[LDAP/AD]
+            SAML[SAML IdP]
+            OAUTH[OAuth 2.0]
+            PKI[Enterprise PKI]
+        end
+        
+        subgraph "Secure Runtime Environment"
+            direction TB
+            RT1[Python Runtime<br/>Tenant A]
+            RT2[Java Runtime<br/>Tenant B]
+        end
     end
     
-    %% --- Professional Color Scheme ---
-
-    %% Main Control Plane Nodes
-    style GATEWAY fill:#37474f,stroke:#263238,color:#ffffff
-    style HOST fill:#0d47a1,stroke:#002171,color:#ffffff
-    
-    %% Security & Identity Components (Purple Accent)
-    style RBAC fill:#4527a0,stroke:#311b92,color:#ffffff
-    style IM fill:#4527a0,stroke:#311b92,color:#ffffff
-    style PE fill:#4527a0,stroke:#311b92,color:#ffffff
-
-    %% Operations, Governance, Financial & Config Components (Secondary Blue)
-    style SM fill:#1565c0,stroke:#0d47a1,color:#ffffff
-    style TM fill:#1565c0,stroke:#0d47a1,color:#ffffff
-    style AM fill:#1565c0,stroke:#0d47a1,color:#ffffff
-    style GM fill:#1565c0,stroke:#0d47a1,color:#ffffff
-    style CM fill:#1565c0,stroke:#0d47a1,color:#ffffff
-    style CONFIG fill:#1565c0,stroke:#0d47a1,color:#ffffff
-
-    %% Backgrounds & Containers
-    style ACP fill:#f5f5f5,stroke:#e0e0e0
-    style SI fill:#fafafa,stroke:#e0e0e0
-    style OG fill:#fafafa,stroke:#e0e0e0
-    style FC fill:#fafafa,stroke:#e0e0e0
+    %% Connections
+    GATEWAY --> HOST
+    HOST --> SM & RBAC & PE & AM & TM & CM & GM & IM & CONFIG
+    RBAC --> LDAP & SAML & OAUTH
+    HOST -.->|mTLS| RT1
+    HOST -.->|mTLS| RT2
 ```
 
 ### 2.1. Mandated Components
 
-An AESP-compliant implementation MUST provide the following components:
+An AESP-compliant Host MUST integrate with the following mandated components:
 
-*   **API Gateway:** A unified, secure entry point for all client and Runtime traffic, responsible for TLS termination, authentication, and routing.
-*   **Identity Manager:** Provides the administrative control plane for managing all principals (users, service accounts) and integrating with enterprise identity providers (e.g., LDAP, SAML).
-*   **RBAC Engine:** Manages hierarchical roles and permissions, making fine-grained authorization decisions for every action.
-*   **Policy Engine:** A high-performance engine that evaluates declarative policies (e.g., using Common Expression Language - CEL) to enforce complex, context-aware rules.
-*   **Tenant Manager:** Enforces strict multi-tenant isolation for data, resources, and configuration.
-*   **Audit Manager:** Creates a cryptographically-signed, immutable audit trail for all significant system events.
-*   **Governance Manager:** Orchestrates programmatic approval workflows for critical system artifacts like policies and tool contracts.
-*   **Cost Manager:** Provides comprehensive financial governance by metering resource consumption and managing budgets.
+*   **API Gateway**: The unified, secure entry point for all external client interactions, responsible for TLS termination, authentication, rate limiting, and routing.
+*   **Identity Manager**: Provides the administrative control plane for managing all system principals (users, service accounts), including their lifecycle and synchronization with external enterprise IdPs.
+*   **RBAC Engine**: Manages hierarchical roles and permissions, integrating with the Identity Manager to make fine-grained authorization decisions for every action.
+*   **Policy Engine**: Evaluates declarative policies (e.g., using Common Expression Language - CEL) to enforce complex, real-time security, operational, and business rules.
+*   **Audit Manager**: Creates a cryptographically-signed, immutable audit trail of every significant system event, from administrative actions to tool invocations.
+*   **Governance Manager**: Orchestrates programmatic approval workflows for critical system artifacts like policies, tool contracts, and budgets, ensuring changes are controlled and auditable.
+*   **Cost Manager**: Provides financial governance by metering resource consumption, attributing costs to tenants and principals, and enforcing budgets.
+*   **Tenant Manager**: Enforces strict multi-tenant isolation for data, resources, and configuration.
+*   **Configuration Manager**: Enables dynamic, zero-downtime updates to the control plane's operational configuration, with changes managed through versioning and governance workflows.
 
 ## 3. AESP Message Replacements and Extensions
 
-To enable the functionality of the control plane, AESP replaces several base GRID messages with extended, enterprise-specific versions.
+AESP achieves its enhanced capabilities by replacing key GRID protocol messages with extended enterprise versions. These messages are designed to be supersets of their base counterparts.
 
 ### 3.1. `EnterpriseSecurityContext`
 
-This message **replaces** the base `SecurityContext` and is the core of AESP's identity and policy model.
+The `EnterpriseSecurityContext` **replaces** the base GRID `SecurityContext`. It expands the simple principal and tenant IDs with a rich set of claims and metadata required for enterprise-grade RBAC and policy decisions.
 
 ```idl
-// REPLACES GRID message: SecurityContext
 message EnterpriseSecurityContext {
-  string principal_id = 1;         // User or service account ID
-  string tenant_id = 2;            // Tenant context
-  map<string, string> claims = 3;  // Opaque claims from an external IdP
-  string organization_id = 4;      // Top-level enterprise identifier
-  repeated string roles = 5;       // List of roles assigned to the principal
-  string security_clearance = 6;   // Security clearance level (e.g., "confidential")
-  map<string, string> policy_context = 7; // Additional context for the Policy Engine
+  // Base GRID Fields
+  string principal_id = 1;
+  string tenant_id = 2;
+
+  // AESP Extensions
+  map<string, string> claims = 3;         // Claims from the identity token (e.g., JWT).
+  string organization_id = 4;           // Top-level enterprise identifier.
+  string business_unit = 5;             // Department or cost center.
+  repeated string roles = 6;              // Roles assigned to the principal.
+  repeated string permissions = 7;        // Specific permissions granted.
+  string security_clearance = 8;        // Security clearance level (e.g., "confidential").
+  string data_classification = 9;       // Highest data classification level accessible.
+  uint64 session_expires_at = 10;         // Session expiration timestamp.
+  map<string, string> policy_context = 11; // Additional context for the Policy Engine.
 }
 ```
 
 ### 3.2. `EnterpriseToolContract`
 
-This message **replaces** the configuration-level `ToolContract` concept in the Host's manifest, turning it into a governed artifact.
+The `EnterpriseToolContract` **replaces** the use of a standard ADM `FunctionDeclaration` as the Host's manifest entry. It enriches the core function definition with metadata crucial for governance, security, and risk management.
 
 ```idl
-// REPLACES the concept of a simple ToolContract in the Host's manifest
 message EnterpriseToolContract {
-  // Core ADM fields
-  FunctionDeclaration declaration = 1;
+  // Base ADM Fields
+  string name = 1;
+  string description = 3;
+  repeated ParameterSchema parameters = 4; // Conforms to ADM Schema
 
-  // Enterprise governance fields
-  string approval_status = 2;      // PENDING, APPROVED, REJECTED
-  string approved_by = 3;          // Principal ID of approver
-  uint64 approved_at = 4;          // UTC timestamp of approval
-  string risk_assessment = 5;      // LOW, MEDIUM, HIGH
-  repeated string compliance_tags = 6; // e.g., "SOC2", "HIPAA"
-  repeated string required_roles = 7;  // RBAC roles required to execute this tool
+  // AESP Extensions
+  string contract_version = 2;
+  string security_classification = 7;       // Data sensitivity level (e.g., "PII", "PUBLIC").
+  repeated string required_roles = 8;       // Roles needed to execute this tool.
+  repeated string required_permissions = 9; // Fine-grained permissions needed.
+  string approval_status = 10;              // e.g., "DRAFT", "PENDING_APPROVAL", "ACTIVE".
+  string approved_by = 11;                  // Principal ID of the approver.
+  uint64 approved_at = 12;                  // Timestamp of approval.
+  repeated string compliance_tags = 13;     // e.g., "GDPR", "HIPAA".
+  string risk_assessment = 14;              // e.g., "LOW", "MEDIUM", "HIGH".
+  map<string, string> governance_metadata = 15; // Other governance-related key-value pairs.
 }
 ```
 
 ### 3.3. `EnterpriseRuntimeAnnouncement`
 
-This message **replaces** the base `AnnounceRuntime` to provide the Host with the necessary context to enforce policies at connection time.
+The `EnterpriseRuntimeAnnouncement` **replaces** the base GRID `AnnounceRuntime`. It provides the Host with critical security and identity information about the Runtime instance, enabling the Host to enforce connection policies.
 
 ```idl
-// REPLACES GRID message: AnnounceRuntime
 message EnterpriseRuntimeAnnouncement {
-  // Core GRID fields
-  string runtime_id = 1;
-  string language = 2;
-  string version = 3;
-  repeated string capabilities = 4;
+  // Base GRID Fields
+  string runtime_id = 1;      // A unique identifier for this runtime instance.
+  string language = 2;        // The implementation language (e.g., "python").
+  string version = 3;         // The version of the runtime's GRID client library.
+  repeated string capabilities = 4; // List of supported GRID features.
 
-  // Enterprise context fields
-  string tenant_id = 5;             // Declares which tenant this runtime serves
-  string security_zone = 6;         // The network/security zone it operates in (e.g., "dmz", "pci-zone")
-  string deployment_environment = 7;    // DEV, TEST, PROD
+  // AESP Extensions
+  // Information extracted from the Runtime's mTLS certificate.
+  CertificateIdentity certificate_identity = 5;
+  // Attestation data proving the runtime's integrity (e.g., from a TPM).
+  bytes runtime_attestation = 6;
+  // The contracts the runtime is pre-configured to fulfill.
+  repeated string declared_contracts = 7;
 }
 ```
 
 ### 3.4. `EnterpriseError`
 
-This message **replaces** the base `Error` structure in a `ToolResult`, providing richer, more actionable diagnostic information.
+The `EnterpriseError` **replaces** the base GRID `Error`. It provides a much richer, structured format for error reporting, including details for security, compliance, and automated remediation.
 
 ```idl
-// REPLACES GRID message: Error
 message EnterpriseError {
-  string code = 1;                     // e.g., AUTHORIZATION_DENIED
-  string message = 2;                  // Human-readable message
-  map<string, string> details = 3;     // Additional technical details
-  string correlation_id = 4;           // End-to-end trace ID
-  string compliance_impact = 5;        // Description of any compliance violations
-  string security_implication = 6;     // Description of the security risk
-  string remediation_steps = 7;        // Suggested actions for the client or user
+  // Base GRID Fields
+  string code = 1;        // Standard error code (e.g., PERMISSION_DENIED).
+  string message = 2;     // Human-readable error description.
+
+  // AESP Extensions
+  map<string, string> details = 3;          // Additional machine-readable details.
+  string tenant_id = 4;                   // Tenant context for the error.
+  string principal_id = 5;                // Principal context for the error.
+  string correlation_id = 6;              // ID for tracing the request end-to-end.
+  uint64 retry_after_ms = 7;              // Suggested delay before retrying.
+  repeated string security_implications = 8; // Potential security impacts.
+  repeated string compliance_impact = 9;   // Potential compliance violations.
+  repeated string remediation_steps = 10;  // Suggested actions to resolve the error.
+  bool escalation_required = 11;          // Whether this error requires human intervention.
 }
 ```
 
-## 4. Mandatory Enterprise Services (IDL)
+## 4. Mandatory Enterprise Services (IDL Summary)
 
-An AESP-compliant Host MUST expose APIs for managing its mandated components. These services are typically exposed through the API Gateway. The following is a high-level summary of the required RPC services.
+An AESP-compliant Host MUST expose a set of secure, auditable APIs for managing the control plane. These services provide the programmatic interface for all administrative and governance functions. The following is a summary of the required service scopes:
 
-### 4.1. EnterpriseIdentityService
-
-```idl
-service EnterpriseIdentityService {
-  // Manages the lifecycle of service accounts
-  rpc CreateServiceAccount(...) returns (...);
-  rpc RevokeServiceAccount(...) returns (...);
-  
-  // Manages roles and permissions for principals
-  rpc AssignRole(...) returns (...);
-  rpc GetPrincipalPermissions(...) returns (...);
-}
-```
-
-### 4.2. EnterprisePolicyService
-
-```idl
-service EnterprisePolicyService {
-  // Manages the lifecycle of CEL-based policies
-  rpc CreatePolicy(...) returns (...);
-  rpc UpdatePolicy(...) returns (...);
-  
-  // Allows for pre-flight checking of policies
-  rpc TestPolicy(...) returns (...);
-}
-```
-
-### 4.3. EnterpriseAuditService
-
-```idl
-service EnterpriseAuditService {
-  // Allows authorized principals to query the immutable audit log
-  rpc QueryEvents(...) returns (stream AuditEvent);
-  
-  // Generates formal compliance reports for auditors
-  rpc GetComplianceReport(...) returns (...);
-}
-```
+*   **`EnterpriseIdentityService`**: Manages the lifecycle of principals (users, service accounts), their roles, and their synchronization with external identity providers.
+*   **`EnterprisePolicyService`**: Manages the lifecycle of security and business policies, including their creation, validation, deployment, and versioning.
+*   **`EnterpriseAuditService`**: Provides query access to the immutable audit log, allowing administrators to investigate events and generate compliance reports.
+*   **`EnterpriseGovernanceService`**: Manages the programmatic approval workflows for critical artifacts such as policies, tool contracts, and budgets.
+*   **`EnterpriseCostManagementService`**: Manages budgets, provides cost attribution, and exposes metering data for financial oversight.
+*   **`EnterpriseConfigurationService`**: Manages the dynamic operational configuration of the AESP control plane itself.
 
 ## 5. Security Requirements
 
-An AESP-compliant system MUST meet the following security requirements:
+AESP mandates a set of non-negotiable security controls to ensure a hardened, enterprise-ready posture.
 
-*   **Transport Security:** All communication between the API Gateway, the Host, and all Runtimes MUST be encrypted using mutual TLS (mTLS) 1.3 or higher.
-*   **Identity Integration:** The Identity Manager MUST integrate with at least one enterprise identity provider (LDAP, SAML, or OIDC).
-*   **Immutable Auditing:** All events logged by the Audit Manager MUST be cryptographically signed to ensure their integrity and non-repudiation.
-*   **RBAC Enforcement:** Every API call and tool invocation MUST be authorized by the RBAC Engine.
-*   **Policy Enforcement:** Every tool invocation MUST be evaluated by the Policy Engine.
+*   **Transport Security**: All network communication between the AESP Host and its Runtimes **must** be secured using **mutual TLS (mTLS) v1.3 or higher**.
+*   **Identity Integration**: The AESP Control Plane **must** integrate with an enterprise identity provider (e.g., LDAP, SAML, OIDC) to act as the source of truth for user identities.
+*   **Immutable Auditing**: All significant events **must** be recorded in a cryptographically-signed, immutable audit log. This includes all administrative actions, policy changes, tool invocations, and session lifecycle events.
+*   **Centralized Contract Authority**: The AESP Host **must** act as the single source of truth for all `EnterpriseToolContract` definitions. Runtimes can only fulfill contracts; they cannot define them.
+*   **Least Privilege by Default**: All principals must be subject to RBAC and policy checks, and should be granted the minimum set of permissions necessary for their function.
 
 ## 6. AESP and the Promotion Path
 
-AESP represents the final destination in the tool promotion path that begins with LATER.
+AESP provides the final, most secure stage in the ALTAR tool lifecycle. The promotion path to a fully governed enterprise tool is as follows:
 
-1.  **LATER (Local):** A developer defines a tool in their Elixir application. The `FunctionDeclaration` is generated automatically. The contract is local and trusted.
-2.  **GRID (Distributed):** The tool's logic is moved to a remote microservice (a Runtime). The developer extracts the same `FunctionDeclaration` and places it in the GRID Host's `ToolManifest`. The application code changes from a local call to a GRID client call. The contract is now centralized and validated.
-3.  **AESP (Enterprise):** The `ToolContract` in the Host's manifest is elevated to an `EnterpriseToolContract`. It must now go through the `GovernanceManager` for approval, have `required_roles` and a `risk_assessment` assigned, and its execution becomes subject to the full suite of AESP security controls. The client code does not need to change from the GRID implementation, but the security and governance posture is dramatically enhanced.
+1.  A tool is first defined using the standard **ALTAR Data Model (ADM)**.
+2.  It is tested and run locally using the **LATER** protocol.
+3.  It is deployed to a standard **GRID** environment for distributed execution.
+4.  Finally, for enterprise use, its definition is promoted to an **`EnterpriseToolContract`**. This enrichment process involves adding security classifications, risk assessments, and compliance tags. The contract is then submitted to the **`EnterpriseGovernanceService`** for formal review and approval.
+
+Once approved and active in the AESP Host's manifest, the tool is fully subject to the control plane's policies. Every call is authenticated, authorized by the RBAC and Policy Engines, and meticulously recorded by the Audit Manager, completing its journey to a fully governed enterprise asset.
