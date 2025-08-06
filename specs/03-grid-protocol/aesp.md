@@ -97,6 +97,26 @@ An AESP-compliant Host MUST integrate with the following mandated components:
 *   **Tenant Manager**: Enforces strict multi-tenant isolation for data, resources, and configuration.
 *   **Configuration Manager**: Enables dynamic, zero-downtime updates to the control plane's operational configuration, with changes managed through versioning and governance workflows.
 
+### 2.2. Mapping to Cloud-Native Services
+
+The AESP Control Plane is a logical architecture, not a prescription for a specific implementation. It is designed to be realized using standard, best-in-class cloud-native services. This approach allows enterprises to leverage their existing infrastructure and expertise.
+
+The following table illustrates how AESP components map to concrete services from major cloud providers:
+
+| AESP Component | AWS | Azure | Google Cloud (GCP) |
+| :--- | :--- | :--- | :--- |
+| **API Gateway** | Amazon API Gateway | Azure API Management | Apigee API Management |
+| **AESP Host Cluster** | Amazon EKS, ECS | Azure Kubernetes Service (AKS) | Google Kubernetes Engine (GKE) |
+| **Identity Manager** | AWS IAM Identity Center | Microsoft Entra ID (Azure AD) | Cloud Identity, Identity Platform |
+| **RBAC Engine** | AWS IAM | Azure RBAC | Cloud IAM |
+| **Policy Engine** | AWS Config, OPA Gatekeeper | Azure Policy, OPA Gatekeeper | OPA Gatekeeper |
+| **Audit Manager** | AWS CloudTrail | Azure Monitor | Google Cloud Audit Logs |
+| **Governance Manager**| AWS Step Functions, CodePipeline | Azure Logic Apps, DevOps | Cloud Composer, Cloud Build |
+| **Cost Manager** | AWS Cost Explorer, Budgets | Microsoft Cost Management | Cloud Billing |
+| **Configuration Manager**| AWS AppConfig, Parameter Store| Azure App Configuration | Runtime Config |
+
+This mapping demonstrates that AESP is not a proprietary, black-box system but rather a standardized architecture that organizes and integrates the powerful enterprise services that modern cloud platforms already provide.
+
 ## 3. AESP Message Replacements and Extensions
 
 AESP achieves its enhanced capabilities by replacing key GRID protocol messages with extended enterprise versions. These messages are designed to be supersets of their base counterparts.

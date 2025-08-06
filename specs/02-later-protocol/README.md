@@ -8,13 +8,13 @@
 
 ### 1.1. Vision & Guiding Principles
 
-The **LATER (Local Agent & Tool Execution Runtime) Protocol** defines a language-agnostic standard for local, in-process AI tool execution. It is designed to provide a simple, introspection-first developer experience for integrating native code with AI agents, serving as the foundational layer for rapid prototyping and application-specific tooling.
+The **LATER (Local Agent & Tool Execution Runtime) Protocol** provides a language-agnostic standard for local, in-process AI tool execution. It is designed to be the **frictionless on-ramp to production** for the ALTAR ecosystem. Its primary purpose is to enable developers to build and test tools locally that are *guaranteed* to be compatible with the secure, scalable **GRID** execution environment, ensuring a seamless transition from development to deployment.
 
 LATER is governed by three core principles:
 
-1.  **Implements the ADM:** LATER is a consumer of the **ALTAR Data Model (ADM)**. All data structures it produces and consumes (`FunctionDeclaration`, `FunctionCall`, `ToolResult`, etc.) must conform to the ADM v1.0 specification. This ensures seamless interoperability within the broader ALTAR ecosystem.
-2.  **Local-First, In-Process:** The protocol is strictly for tool execution within the same application process. The specification makes no provisions for networking, serialization for transport, or inter-process communication, as these concerns are explicitly delegated to the GRID protocol.
-3.  **Simplicity & Introspection:** The protocol prioritizes a simple developer experience. A compliant implementation must favor automated schema generation from native function signatures and documentation, minimizing boilerplate and manual configuration.
+1.  **The Frictionless On-Ramp to Production:** Every feature in LATER is designed with the "promotion path" in mind. The developer experience is optimized to ensure that code written for local execution works identically when pointed at the distributed GRID backend, eliminating the need for costly and error-prone rewrites.
+2.  **Implements the ADM:** LATER is a consumer of the **ALTAR Data Model (ADM)**. All data structures it produces and consumes (`FunctionDeclaration`, `FunctionCall`, `ToolResult`, etc.) must conform to the ADM v1.0 specification. This shared contract is what makes the promotion path possible.
+3.  **Developer Experience & Introspection:** The protocol prioritizes a world-class developer experience. A compliant implementation must favor automated schema generation from native function signatures and documentation, minimizing boilerplate and manual configuration. It must also provide adapters for popular existing AI frameworks (see Section 2.4).
 
 ### 1.2. Relationship to ADM & GRID
 
@@ -113,6 +113,47 @@ The Executor is responsible for invoking a tool's business logic in response to 
     *   On successful execution, it must wrap the function's return value in an ADM-compliant `ToolResult` with a `status` of `SUCCESS`.
     *   On any failure (validation error, runtime exception, etc.), it must construct a `ToolResult` with a `status` of `ERROR` and a structured `ErrorObject` containing a clear message.
 
+### 2.4. Tool Adapters & Ecosystem Compatibility
+
+To lower the barrier to adoption, a LATER implementation must provide **bi-directional tool adapters** for popular existing AI frameworks. These adapters allow developers to use their existing tools written for other frameworks within ALTAR, and vice-versa, without modification.
+
+**Conceptual Adapter Functions:**
+
+```python
+# Conceptual Python adapter for LangChain
+import altar
+from langchain_core.tools import BaseTool
+
+# Ingest an existing LangChain tool into the LATER Global Registry
+def LATER.import_from_langchain(lc_tool: BaseTool):
+  # ... logic to convert LangChain tool schema to ADM and register ...
+  pass
+
+# Expose a LATER-native tool as a LangChain-compatible tool
+def LATER.export_to_langchain(tool_name: str) -> BaseTool:
+  # ... logic to wrap a LATER tool in a BaseTool-compliant interface ...
+  pass
+```
+
+```csharp
+// Conceptual C# adapter for Semantic Kernel
+using Microsoft.SemanticKernel;
+
+// Ingest an existing Semantic Kernel plugin into the LATER Global Registry
+public void LATER.import_from_sk(KernelPlugin sk_plugin)
+{
+    // ... logic to convert SK function schemas to ADM and register ...
+}
+
+// Expose a LATER-native tool as a Semantic Kernel plugin
+public KernelPlugin LATER.export_to_sk(string[] tool_names)
+{
+    // ... logic to wrap one or more LATER tools in a KernelPlugin ...
+}
+```
+
+This commitment to interoperability is central to LATER's mission. It ensures developers can try the ALTAR promotion path without needing to first rewrite their existing, battle-tested tools.
+
 ## 3. Canonical Implementation Pattern: Elixir
 
 This section provides a brief, non-normative example of how the abstract protocol can be idiomatically implemented in Elixir. This serves as a reference for implementers in other languages.
@@ -173,9 +214,13 @@ defmodule Later.Executor do
 end
 ```
 
-## 4. End-to-End Workflow Example
+## 4. The Core Workflow: From Local IDE to Production Deployment
 
-This example illustrates the complete LATER protocol flow from the perspective of a host application (e.g., `gemini_ex`).
+This section illustrates the complete end-to-end workflow, demonstrating the core value proposition of LATER: developing a tool locally and seamlessly promoting it to a secure, distributed GRID environment by changing a single line of configuration.
+
+### 4.1. The End-to-End LATER Flow
+
+The following diagram shows the sequence of events when a tool is executed locally using the LATER protocol.
 
 ```mermaid
 sequenceDiagram
@@ -203,52 +248,53 @@ sequenceDiagram
     LLM-->>-App: Final Response("The sum of 5 and 7 is 12.")
 ```
 
-**Code Snippets (Illustrative):**
+### 4.2. The Seamless Promotion Path to GRID
+
+A core architectural benefit of LATER is the seamless "promotion path" for a tool to a distributed **GRID (Global Runtime & Interface Definition)** environment. This migration requires **no changes to the tool's ADM contract** (`FunctionDeclaration`) or the host application's core logic.
+
+The promotion is achieved entirely through configuration.
+
+**Step 1: Develop and Test Locally with LATER**
+
+The developer writes and tests their tool using LATER. The host application is configured to use the local LATER tool source.
 
 ```elixir
-# 1. Host application starts a session and gets available tools
-{:ok, session} = Later.Session.start(tools: ["add/2", "calculate_total/3"])
-declarations = Later.Session.get_tool_declarations(session)
+# config/dev.exs
+config :my_app, MyApp.Endpoint,
+  tool_source: {:later, MyApp.LocalToolSource}
 
-# 2. Host sends declarations to the LLM
+# --- Host Application Logic (remains unchanged) ---
+# 1. Start a session and get tool declarations
+{:ok, session} = MyApp.Endpoint.start_session(tools: ["add/2"])
+declarations = MyApp.Endpoint.get_tool_declarations(session)
+
+# 2. Interact with the LLM
 response = Gemini.generate("What is 15 + 30?", tools: declarations)
-# response.function_call = %FunctionCall{name: "add", args: %{a: 15, b: 30}}
+# ... LLM returns a FunctionCall
 
-# 3. Host dispatches the FunctionCall to the LATER Executor
-result = Later.Executor.execute(session, response.function_call)
+# 3. Dispatch the call via the configured endpoint
+result = MyApp.Endpoint.execute(session, response.function_call)
 # result = %ToolResult{name: "add", status: :SUCCESS, content: 45}
-
-# 4. Host sends the result back to the LLM to get the final answer
-final_response = Gemini.generate(..., tool_results: [result])
-# final_response.text = "The result is 45."
 ```
 
-## 5. Promotion Path to GRID
+**Step 2: Deploy Tool to a GRID Runtime**
 
-A core architectural benefit of LATER is the seamless "promotion path" for a tool to a distributed **GRID (Global Runtime & Interface Definition)** environment. This migration requires **no changes to the tool's ADM contract** (`FunctionDeclaration`).
+The same tool code (e.g., `MyApp.CalculatorTools`) is deployed as part of a standalone GRID-compliant Runtime service. This service exposes the tool over the network.
 
-The promotion is achieved at the host application layer by changing the tool's source.
+**Step 3: Promote by Changing Configuration**
 
-**Migration Steps:**
-
-1.  **Deploy the Tool:** The native function (e.g., `CalculatorTools.add/2`) is deployed within a GRID-compliant Runtime service, separate from the host application. This Runtime exposes the tool over the network.
-2.  **Change the Tool Source:** The host application is reconfigured to source the `add/2` tool from the GRID client instead of the local LATER runtime.
-
-This works because both LATER and GRID present the same ADM `FunctionDeclaration` to the LLM. The model is unaware of the execution backend; it simply sees a tool contract it can use.
-
-**Conceptual Example of a Host Application's `ToolSource`:**
+To switch to the production-ready, secure backend, the developer changes a single line in their configuration file. **The application code does not change.**
 
 ```elixir
-# --- Using a LATER tool ---
-config :my_app, tool_sources: [
-  LATER.ToolSource # Points to the local, in-process executor
-]
-
-# --- Using a GRID tool (after promotion) ---
-config :my_app, tool_sources: [
-  GRID.ToolSource, # Points to a remote GRID client
-  config: [host: "grid.example.com", port: 8080]
-]
+# config/prod.exs
+config :my_app, MyApp.Endpoint,
+  tool_source: {:grid, MyApp.GridToolSource, [
+    host: "grid.example.com",
+    port: 8080,
+    transport: :grpc
+  ]}
 ```
 
-By adhering to the ADM as the universal contract, LATER ensures that local tools are built from day one to be compatible with the broader, enterprise-grade ecosystem, fulfilling the "write once, run anywhere" promise of the ALTAR architecture.
+When the application is restarted with this configuration, calls to `MyApp.Endpoint.execute/2` are now routed through the `GridToolSource`, which handles the secure, networked call to the remote GRID Runtime.
+
+Because both LATER and GRID share the same ADM contract, the LLM and the host application are completely unaware of the change in execution backend. This fulfills the "write once, run anywhere" promise of the ALTAR architecture.

@@ -8,12 +8,12 @@
 
 ### 1.1. Vision & Guiding Principles
 
-The GRID (Global Runtime & Interop Director) Protocol v1.0 specification defines a standard for secure, stateful, and distributed AI tool communication. It provides a robust framework for interactions between a central Host and multiple, disparate Runtimes, enabling scalable and language-agnostic tool use for advanced AI systems.
+The **GRID (Global Runtime & Interop Director) Protocol** is the secure, scalable execution backend for the ALTAR ecosystem. It provides the **production-grade fulfillment layer** for tools developed and tested with the LATER protocol, solving the critical security, governance, and operational challenges that are not addressed by open-source development frameworks.
 
 GRID is built on two core principles:
 
-1.  **Host-Centric Security:** The protocol's most critical feature is its security model, where the Host is the single source of truth for tool definitions. This prevents a wide range of vulnerabilities by ensuring that all tool invocations are validated against trusted contracts.
-2.  **Stateful, Session-Based Interaction:** GRID treats the `Session` as a first-class citizen, providing an isolated context for a series of interactions between a client, the Host, and one or more Runtimes.
+1.  **Managed, Secure Fulfillment:** GRID's primary value is providing a secure, managed environment for tool execution. Its Host-centric security model (see Section 3) is not just a feature but the foundation of its enterprise-readiness.
+2.  **Language-Agnostic Scalability:** GRID is designed from the ground up to orchestrate tool execution across a fleet of polyglot Runtimes. This allows specialized tools written in Python, Go, Node.js, etc., to be scaled independently of the host application, optimizing performance and resource allocation.
 
 ### 1.2. Relationship to ADM & LATER
 
@@ -110,15 +110,19 @@ graph LR
 
 ## 3. Security Model: Host-Managed Contracts
 
-GRID's most important feature is its **Host-centric security model**, which is designed to prevent "Trojan Horse" vulnerabilities common in other tool-use systems.
-
-In many systems, a tool provider (a Runtime) declares its own capabilities, including function names and parameter schemas. A malicious or compromised Runtime could misrepresent its schema, tricking a client into sending sensitive data. For example, it could register a function `get_user_email(user_id: string)` but define its parameters to accept an entire user object, leading to data exfiltration.
+GRID's most important feature is its **Host-centric security model**, which is designed to prevent "Trojan Horse" vulnerabilities common in other tool-use systems. In many systems, a tool provider (a Runtime) declares its own capabilities. A malicious or compromised Runtime could misrepresent its schema, tricking a client into sending sensitive data.
 
 GRID solves this by inverting the trust model:
 
 1.  **The Host is the Source of Truth:** The Host maintains a manifest of trusted **Tool Contracts**. These contracts are the *only* tool definitions the system recognizes.
 2.  **Runtimes Fulfill, They Don't Define:** A Runtime cannot register a new tool. Instead, it can only announce that it is capable of *fulfilling* one or more of the contracts already defined by the Host.
 3.  **Host-Side Validation:** When a Client sends a `ToolCall`, the Host validates the arguments against its own trusted contract *before* forwarding the call to the Runtime. The Runtime is never the authority on the contract schema.
+
+> **GRID Security: From Developer Responsibility to Platform Guarantee**
+>
+> **Typical Open-Source Model:** Security is the developer's responsibility. The framework provides the primitives, but the developer must correctly implement input validation, access control, and secure deployment practices. A mistake can easily lead to a vulnerability.
+>
+> **The GRID Model:** Security is a platform guarantee. By centralizing contract authority and validation in the Host, GRID provides built-in protection against a class of vulnerabilities. The platform, not the developer, is responsible for ensuring that only trusted, validated calls are dispatched for execution. This significantly reduces the security burden on the application developer and provides a more robust, auditable system by design.
 
 This model ensures that all tool interactions are governed by centrally-vetted, secure contracts, providing a high degree of security, auditability, and control, which is essential for enterprise environments.
 
@@ -273,7 +277,21 @@ sequenceDiagram
     deactivate H
 ```
 
-## 6. Compliance Levels
+## 6. The Business Case for GRID
+
+The GRID protocol and its corresponding managed Host implementations are designed to answer a critical question for engineering leaders: *"Why not just use an open-source framework like LangChain and deploy it on cloud services ourselves?"*
+
+While a DIY approach offers maximum flexibility, it also carries significant hidden costs and risks. GRID provides compelling business value by addressing these challenges directly.
+
+-   **Reduced DevOps Overhead:** Building a secure, scalable, polyglot, and observable distributed system for AI tools is a complex engineering task that can take a dedicated team months. A managed GRID Host provides this infrastructure out-of-the-box, allowing teams to focus on building business logic, not on managing queues, load balancers, and container orchestration for他们的 AI tools.
+
+-   **Built-in Security & Compliance (AESP):** The Host-centric security model is a core feature, not an add-on. By adopting GRID, organizations get a pre-built control plane for Role-Based Access Control (RBAC), immutable audit logging, and centralized policy enforcement, as defined by the **Altar Enterprise Security Profile (AESP)**. This dramatically accelerates the path to deploying compliant, secure AI agents in regulated environments.
+
+-   **Language-Agnostic Scalability:** A key architectural advantage of GRID is the decoupling of the Host from the Runtimes. This allows an organization to scale its Python-based data science tools independently from its Go-based backend integration tools. This granular control over scaling optimizes resource utilization and reduces operational costs compared to monolithic deployment strategies.
+
+-   **Faster Time-to-Market:** By leveraging the seamless "promotion path" from LATER, developers can move from a local prototype to a production-scale deployment with a simple configuration change. This agility allows businesses to iterate faster and deliver value from their AI investments sooner.
+
+## 7. Compliance Levels
 
 To facilitate interoperability and gradual adoption, GRID defines several compliance levels.
 
