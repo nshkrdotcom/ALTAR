@@ -2,6 +2,7 @@
 
 **Version:** 1.0
 **Status:** Final
+**Date:** August 5, 2025
 **Defines:** GRID Protocol Level 3 Enterprise Compliance
 
 ## 1. Introduction

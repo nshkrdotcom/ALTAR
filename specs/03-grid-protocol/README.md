@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Status:** Final
-**Date:** August 2025
+**Date:** August 5, 2025
 
 ## 1. Introduction
 
