@@ -26,25 +26,24 @@ An AESP-compliant Host is not a single process, but a collection of coordinated 
 
 ```mermaid
 graph TB
-    subgraph "AESP Control Plane"
-        direction TB
+    subgraph ACP["AESP Control Plane"]
         GATEWAY[API Gateway]
         HOST[GRID Host Cluster]
         
-        subgraph "Security & Identity"
+        subgraph SI["Security & Identity"]
             RBAC[RBAC Engine]
             IM[Identity Manager]
             PE[Policy Engine]
         end
         
-        subgraph "Operations & Governance"
+        subgraph OG["Operations & Governance"]
             SM[Session Manager]
             TM[Tenant Manager]
             AM[Audit Manager]
             GM[Governance Manager]
         end
         
-        subgraph "Financial & Configuration"
+        subgraph FC["Financial & Configuration"]
             CM[Cost Manager]
             CONFIG[Configuration Manager]
         end
@@ -53,14 +52,30 @@ graph TB
         HOST --> SM & RBAC & PE & AM & TM & CM & GM & IM & CONFIG
     end
     
-    style GATEWAY fill:#1f2937,stroke:#111827,color:#ffffff
-    style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff
-    style RBAC fill:#dc2626,stroke:#b91c1c,color:#ffffff
-    style IM fill:#06b6d4,stroke:#0891b2,color:#ffffff
-    style PE fill:#dc2626,stroke:#b91c1c,color:#ffffff
-    style AM fill:#059669,stroke:#047857,color:#ffffff
-    style GM fill:#8b5cf6,stroke:#7c3aed,color:#ffffff
-    style CM fill:#f59e0b,stroke:#d97706,color:#ffffff
+    %% --- Professional Color Scheme ---
+
+    %% Main Control Plane Nodes
+    style GATEWAY fill:#37474f,stroke:#263238,color:#ffffff
+    style HOST fill:#0d47a1,stroke:#002171,color:#ffffff
+    
+    %% Security & Identity Components (Purple Accent)
+    style RBAC fill:#4527a0,stroke:#311b92,color:#ffffff
+    style IM fill:#4527a0,stroke:#311b92,color:#ffffff
+    style PE fill:#4527a0,stroke:#311b92,color:#ffffff
+
+    %% Operations, Governance, Financial & Config Components (Secondary Blue)
+    style SM fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style TM fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style AM fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style GM fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style CM fill:#1565c0,stroke:#0d47a1,color:#ffffff
+    style CONFIG fill:#1565c0,stroke:#0d47a1,color:#ffffff
+
+    %% Backgrounds & Containers
+    style ACP fill:#f5f5f5,stroke:#e0e0e0
+    style SI fill:#fafafa,stroke:#e0e0e0
+    style OG fill:#fafafa,stroke:#e0e0e0
+    style FC fill:#fafafa,stroke:#e0e0e0
 ```
 
 ### 2.1. Mandated Components

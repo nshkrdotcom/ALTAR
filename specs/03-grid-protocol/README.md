@@ -27,12 +27,12 @@ The GRID protocol is based on a robust, centralized orchestration model.
 
 ```mermaid
 graph LR
-    subgraph "GRID Ecosystem"
-        subgraph "Client Layer"
+    subgraph GE["GRID Ecosystem"]
+        subgraph CL["Client Layer"]
             APP[Host Application / LLM Client]
         end
         
-        subgraph "Orchestration Layer"
+        subgraph OL["Orchestration Layer"]
             HOST[GRID Host]
             SM[Session Manager]
             TR[Tool Registry]
@@ -43,22 +43,40 @@ graph LR
             HOST --> AUTH
         end
         
-        subgraph "Execution Layer"
+        subgraph EL["Execution Layer"]
             RT1[Python Runtime]
             RT2[Go Runtime]
             RT3[TypeScript Runtime]
         end
     end
     
+    %% --- Connections ---
     APP --> HOST
     HOST <--> RT1
     HOST <--> RT2
     HOST <--> RT3
     
-    style HOST fill:#4338ca,stroke:#3730a3,color:#ffffff
-    style RT1 fill:#34d399,stroke:#25a274,color:#ffffff
-    style RT2 fill:#34d399,stroke:#25a274,color:#ffffff
-    style RT3 fill:#34d399,stroke:#25a274,color:#ffffff
+    %% --- Professional Color Scheme ---
+    
+    %% Core Components
+    style HOST fill:#0d47a1,stroke:#002171,color:#ffffff
+    style APP fill:#42a5f5,stroke:#1e88e5,color:#000000
+
+    %% Orchestration Sub-components
+    style SM fill:#e0e0e0,stroke:#bdbdbd,color:#000000
+    style TR fill:#e0e0e0,stroke:#bdbdbd,color:#000000
+    style AUTH fill:#e0e0e0,stroke:#bdbdbd,color:#000000
+    
+    %% Execution Runtimes
+    style RT1 fill:#00695c,stroke:#004d40,color:#ffffff
+    style RT2 fill:#00695c,stroke:#004d40,color:#ffffff
+    style RT3 fill:#00695c,stroke:#004d40,color:#ffffff
+    
+    %% Backgrounds & Layers
+    style GE fill:#f5f5f5,stroke:#e0e0e0
+    style CL fill:#fafafa,stroke:#e0e0e0
+    style OL fill:#fafafa,stroke:#e0e0e0
+    style EL fill:#fafafa,stroke:#e0e0e0
 ```
 
 *   **Host:** The central server process that implements the GRID protocol. It manages sessions, maintains the authoritative tool registry, routes invocations, and enforces security policies.
