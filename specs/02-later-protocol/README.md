@@ -201,7 +201,6 @@ sequenceDiagram
 
     App->>+LLM: generate_content(..., tool_results: [ToolResult])
     LLM-->>-App: Final Response("The sum of 5 and 7 is 12.")
-    deactivate LATER
 ```
 
 **Code Snippets (Illustrative):**
