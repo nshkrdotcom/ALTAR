@@ -122,33 +122,221 @@ To lower the barrier to adoption, a LATER implementation must provide **bi-direc
 ```python
 # Conceptual Python adapter for LangChain
 import altar
+import inspect
+from typing import Type
+from pydantic import BaseModel
 from langchain_core.tools import BaseTool
 
-# Ingest an existing LangChain tool into the LATER Global Registry
-def LATER.import_from_langchain(lc_tool: BaseTool):
-  # ... logic to convert LangChain tool schema to ADM and register ...
-  pass
+# --- Ingestion: LangChain -> LATER ---
 
-# Expose a LATER-native tool as a LangChain-compatible tool
+def LATER.import_from_langchain(lc_tool: BaseTool):
+  """
+  Converts a LangChain tool into an ADM FunctionDeclaration and registers it
+  with the LATER Global Registry.
+  """
+  # 1. Map LangChain's Pydantic schema to an ADM Schema
+  adm_schema = _convert_pydantic_to_adm_schema(lc_tool.args_schema)
+
+  # 2. Construct the FunctionDeclaration
+  declaration = altar.ADM.FunctionDeclaration(
+      name=lc_tool.name,
+      description=lc_tool.description,
+      parameters=adm_schema
+  )
+
+  # 3. Define the execution wrapper and register it
+  def _wrapper_func(**kwargs):
+      # LangChain tools expect a single string or dictionary input
+      result = lc_tool.invoke(kwargs)
+      return altar.ADM.ToolResult(status="SUCCESS", content=result)
+
+  LATER.GlobalRegistry.register(declaration, _wrapper_func)
+
+def _convert_pydantic_to_adm_schema(pydantic_model: Type[BaseModel]) -> altar.ADM.Schema:
+  """
+  Inspects a Pydantic model to generate an ADM Schema.
+  """
+  properties = {}
+  required = []
+
+  for field_name, model_field in pydantic_model.model_fields.items():
+    field_type = model_field.annotation
+
+    # Map Python types to ADM types
+    adm_type = "STRING" # Default
+    if field_type is int:
+        adm_type = "INTEGER"
+    elif field_type is float:
+        adm_type = "NUMBER"
+    elif field_type is bool:
+        adm_type = "BOOLEAN"
+
+    properties[field_name] = altar.ADM.Schema(
+        type=adm_type,
+        description=model_field.description or ""
+    )
+
+    if model_field.is_required():
+      required.append(field_name)
+
+  return altar.ADM.Schema(type="OBJECT", properties=properties, required=required)
+
+
+# --- Egress: LATER -> LangChain ---
+
 def LATER.export_to_langchain(tool_name: str) -> BaseTool:
-  # ... logic to wrap a LATER tool in a BaseTool-compliant interface ...
-  pass
+  """
+  Exposes a LATER-native tool as a LangChain-compatible BaseTool.
+  """
+  # 1. Retrieve the tool's contract from the LATER Global Registry
+  declaration = LATER.GlobalRegistry.lookup_declaration(tool_name)
+  if not declaration:
+      raise ValueError(f"Tool '{tool_name}' not found in LATER registry.")
+
+  # 2. Dynamically create a Pydantic model for the arguments
+  args_schema = _convert_adm_to_pydantic_schema(declaration.parameters)
+
+  # 3. Create a dynamic class that inherits from BaseTool
+  class LangChainToolWrapper(BaseTool):
+      name: str = declaration.name
+      description: str = declaration.description
+      args_schema: Type[BaseModel] = args_schema
+
+      def _run(self, **kwargs):
+          # This is the bridge to the LATER execution runtime
+          function_call = altar.ADM.FunctionCall(name=self.name, args=kwargs)
+
+          # Assumes a session_id is available in the context
+          session_id = _get_current_session_id()
+          tool_result = LATER.Executor.execute(session_id, function_call)
+
+          if tool_result.status == "SUCCESS":
+              return tool_result.content
+          else:
+              # LangChain expects exceptions on failure
+              raise Exception(f"Tool execution failed: {tool_result.error.message}")
+
+  return LangChainToolWrapper()
+
+def _convert_adm_to_pydantic_schema(adm_schema: altar.ADM.Schema) -> Type[BaseModel]:
+    # This would involve more complex dynamic Pydantic model creation logic
+    # For simplicity, we'll imagine a helper function handles this.
+    from pydantic import create_model
+
+    fields = {}
+    for name, prop_schema in adm_schema.properties.items():
+        # Map ADM types back to Python types
+        py_type = str # Default
+        if prop_schema.type == "INTEGER":
+            py_type = int
+        elif prop_schema.type == "NUMBER":
+            py_type = float
+        elif prop_schema.type == "BOOLEAN":
+            py_type = bool
+
+        # Pydantic fields are tuples of (type, default_value)
+        # If the field is not required, we can give it a default of None.
+        default = ... if name in adm_schema.required else None
+        fields[name] = (py_type, default)
+
+    return create_model(f"{adm_schema.name}Args", **fields)
 ```
 
 ```csharp
 // Conceptual C# adapter for Semantic Kernel
 using Microsoft.SemanticKernel;
+using System.Reflection;
+using System.ComponentModel;
 
-// Ingest an existing Semantic Kernel plugin into the LATER Global Registry
+// --- Ingestion: Semantic Kernel -> LATER ---
+
 public void LATER.import_from_sk(KernelPlugin sk_plugin)
 {
-    // ... logic to convert SK function schemas to ADM and register ...
+    foreach (var function in sk_plugin)
+    {
+        // 1. Convert the SK function to an ADM FunctionDeclaration
+        var declaration = _convert_sk_function_to_adm(function);
+
+        // 2. Create a wrapper for execution and register it
+        Func<Dictionary<string, object>, Altar.ADM.ToolResult> wrapper = (args) => {
+            var sk_args = new KernelArguments(args);
+            // Assumes a Kernel is available in the execution context
+            var result = function.InvokeAsync(kernel, sk_args).Result;
+            return new Altar.ADM.ToolResult { Status = "SUCCESS", Content = result };
+        };
+
+        LATER.GlobalRegistry.register(declaration, wrapper);
+    }
 }
 
-// Expose a LATER-native tool as a Semantic Kernel plugin
+private Altar.ADM.FunctionDeclaration _convert_sk_function_to_adm(KernelFunction sk_function)
+{
+    var parameters = new Altar.ADM.Schema { Type = "OBJECT", Properties = new(), Required = new() };
+
+    foreach (var param in sk_function.Metadata.Parameters)
+    {
+        // Map .NET types to ADM types
+        string adm_type = "STRING"; // Default
+        if (param.ParameterType == typeof(int) || param.ParameterType == typeof(long))
+            adm_type = "INTEGER";
+        else if (param.ParameterType == typeof(float) || param.ParameterType == typeof(double) || param.ParameterType == typeof(decimal))
+            adm_type = "NUMBER";
+        else if (param.ParameterType == typeof(bool))
+            adm_type = "BOOLEAN";
+
+        parameters.Properties[param.Name] = new Altar.ADM.Schema
+        {
+            Type = adm_type,
+            Description = param.Description ?? ""
+        };
+
+        if (param.IsRequired)
+        {
+            parameters.Required.Add(param.Name);
+        }
+    }
+
+    return new Altar.ADM.FunctionDeclaration
+    {
+        Name = $"{sk_function.PluginName}_{sk_function.Name}",
+        Description = sk_function.Description ?? "",
+        Parameters = parameters
+    };
+}
+
+
+// --- Egress: LATER -> Semantic Kernel ---
+
 public KernelPlugin LATER.export_to_sk(string[] tool_names)
 {
-    // ... logic to wrap one or more LATER tools in a KernelPlugin ...
+    var functions = new List<KernelFunction>();
+
+    foreach (var tool_name in tool_names)
+    {
+        // 1. Get the ADM declaration from the LATER registry
+        var declaration = LATER.GlobalRegistry.lookup_declaration(tool_name);
+        if (declaration == null) continue;
+
+        // 2. Create a KernelFunction from the ADM declaration
+        var kernel_function = KernelFunctionFactory.CreateFromMethod(
+            () => {
+                // This is the execution bridge back to LATER.
+                // The actual invocation logic is more complex and would be
+                // handled by the SK function's internal implementation, which
+                // would call the LATER executor.
+
+                // Placeholder for the actual call
+                Console.WriteLine($"Executing LATER tool '{tool_name}' via SK wrapper.");
+                return Task.CompletedTask;
+            },
+            functionName: declaration.Name,
+            description: declaration.Description
+            // Further work would be needed to map ADM parameters to SK parameters
+        );
+        functions.Add(kernel_function);
+    }
+
+    return KernelPluginFactory.CreateFromFunctions("LATER_Exported", "Tools exported from the LATER runtime.", functions);
 }
 ```
 
