@@ -1,7 +1,7 @@
 defmodule Altar.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
   @source_url "https://github.com/nshkrdotcom/ALTAR"
 
   def project do
@@ -97,7 +97,8 @@ defmodule Altar.MixProject do
         "priv/docs/specs/01-data-model/data-model.md": [filename: "adm-data-model", title: "ADM Data Model"],
         "priv/docs/specs/02-later-protocol/later-protocol.md": [filename: "later-protocol", title: "LATER Protocol"],
         "priv/docs/specs/03-grid-protocol/grid-protocol.md": [filename: "grid-protocol", title: "GRID Protocol"],
-        "priv/docs/specs/03-grid-protocol/aesp.md": [filename: "grid-aesp", title: "GRID Enterprise Security Profile (AESP)"]
+        "priv/docs/specs/03-grid-protocol/aesp.md": [filename: "grid-aesp", title: "GRID Enterprise Security Profile (AESP)"],
+        "CHANGELOG.md": [filename: "changelog", title: "Release Notes"]
       ],
       groups_for_modules: [
         "Core Protocol": [
