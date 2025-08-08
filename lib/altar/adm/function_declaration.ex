@@ -101,7 +101,6 @@ defmodule Altar.ADM.FunctionDeclaration do
     end
   end
 
-  @spec require_string(map(), atom(), String.t()) :: {:ok, String.t()} | {:error, String.t()}
   defp require_string(attrs, key, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_binary(value) -> {:ok, value}
@@ -110,7 +109,6 @@ defmodule Altar.ADM.FunctionDeclaration do
     end
   end
 
-  @spec optional_map(map(), atom(), map(), String.t()) :: {:ok, map()} | {:error, String.t()}
   defp optional_map(attrs, key, default, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_map(value) -> {:ok, value}

@@ -89,8 +89,6 @@ defmodule Altar.ADM.ToolResult do
     end
   end
 
-  @spec require_non_empty_string(map(), atom(), String.t()) ::
-          {:ok, String.t()} | {:error, String.t()}
   defp require_non_empty_string(attrs, key, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_binary(value) ->
@@ -108,8 +106,6 @@ defmodule Altar.ADM.ToolResult do
     end
   end
 
-  @spec optional_boolean(map(), atom(), boolean(), String.t()) ::
-          {:ok, boolean()} | {:error, String.t()}
   defp optional_boolean(attrs, key, default, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_boolean(value) -> {:ok, value}
@@ -118,7 +114,6 @@ defmodule Altar.ADM.ToolResult do
     end
   end
 
-  @spec optional_any(map(), atom(), any()) :: {:ok, any()}
   defp optional_any(attrs, key, default) do
     case Map.fetch(attrs, key) do
       {:ok, value} -> {:ok, value}

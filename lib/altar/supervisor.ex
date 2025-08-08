@@ -20,10 +20,7 @@ defmodule Altar.Supervisor do
   end
 
   @impl true
-  @spec init(term()) ::
-          {:ok, {Supervisor.sup_flags(), [Supervisor.child_spec()]}}
-          | {:ok, [Supervisor.child_spec()]}
-          | :ignore
+  @spec init(term()) :: {:ok, {Supervisor.sup_flags(), [Supervisor.child_spec()]}}
   def init(_init_arg) do
     children = [
       {Registry, name: Registry}
