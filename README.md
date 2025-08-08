@@ -80,11 +80,11 @@ graph TD
     style ADM fill:#4338ca,stroke:#3730a3,color:#ffffff
 ```
 
-1.  **[LATER Protocol](priv/docs/specs/02-later-protocol/README.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
+1.  **[LATER Protocol](priv/docs/specs/02-later-protocol/later-protocol.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
 
-2.  **[GRID Protocol](priv/docs/specs/03-grid-protocol/README.md)**: **The Secure Production Backend.** GRID provides the managed, secure fulfillment layer for your tools. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
+2.  **[GRID Protocol](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: **The Secure Production Backend.** GRID provides the managed, secure fulfillment layer for your tools. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
 
-3.  **[ALTAR Data Model (ADM)](priv/docs/specs/01-data-model/README.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
+3.  **[ALTAR Data Model (ADM)](priv/docs/specs/01-data-model/data-model.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
 
 ## Getting Started with the Elixir Implementation
 
@@ -97,7 +97,7 @@ Add `altar` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:altar, "~> 0.1.0"}
+    {:altar, "~> 0.1.1"}
   ]
 end
 ```
@@ -179,9 +179,9 @@ This monorepo contains both the protocol specifications and the canonical Elixir
 
 The complete protocol specifications can be found in the `specs/` directory. They have been updated to reflect the platform's focus on productivity and interoperability.
 
-*   **[01-data-model/README.md](priv/docs/specs/01-data-model/README.md)**: The core ALTAR Data Model (ADM).
-*   **[02-later-protocol/README.md](priv/docs/specs/02-later-protocol/README.md)**: The LATER protocol for local execution.
-*   **[03-grid-protocol/README.md](priv/docs/specs/03-grid-protocol/README.md)**: The GRID protocol for distributed execution.
+*   **[01-data-model/data-model.md](priv/docs/specs/01-data-model/data-model.md)**: The core ALTAR Data Model (ADM).
+*   **[02-later-protocol/later-protocol.md](priv/docs/specs/02-later-protocol/later-protocol.md)**: The LATER protocol for local execution.
+*   **[03-grid-protocol/grid-protocol.md](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: The GRID protocol for distributed execution.
     *   **[aesp.md](priv/docs/specs/03-grid-protocol/aesp.md)**: The Enterprise Security Profile for GRID.
 
 ## License

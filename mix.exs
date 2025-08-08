@@ -1,7 +1,7 @@
 defmodule Altar.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.1.1"
   @source_url "https://github.com/nshkrdotcom/ALTAR"
 
   def project do
@@ -94,9 +94,9 @@ defmodule Altar.MixProject do
       extras: [
         "README.md": [filename: "readme", title: "Overview"],
         "LICENSE": [filename: "license", title: "License"],
-        "priv/docs/specs/01-data-model/README.md": [filename: "adm-data-model", title: "ADM Data Model"],
-        "priv/docs/specs/02-later-protocol/README.md": [filename: "later-protocol", title: "LATER Protocol"],
-        "priv/docs/specs/03-grid-protocol/README.md": [filename: "grid-protocol", title: "GRID Protocol"],
+        "priv/docs/specs/01-data-model/data-model.md": [filename: "adm-data-model", title: "ADM Data Model"],
+        "priv/docs/specs/02-later-protocol/later-protocol.md": [filename: "later-protocol", title: "LATER Protocol"],
+        "priv/docs/specs/03-grid-protocol/grid-protocol.md": [filename: "grid-protocol", title: "GRID Protocol"],
         "priv/docs/specs/03-grid-protocol/aesp.md": [filename: "grid-aesp", title: "GRID Enterprise Security Profile (AESP)"]
       ],
       groups_for_modules: [
@@ -117,7 +117,7 @@ defmodule Altar.MixProject do
         ]
       ],
       skip_undefined_reference_warnings_on: [
-        "priv/docs/specs/02-later-protocol/README.md"
+        "priv/docs/specs/02-later-protocol/later-protocol.md"
       ],
       before_closing_head_tag: &mermaid_script/1,
       source_ref: "v#{@version}",
