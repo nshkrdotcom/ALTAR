@@ -50,7 +50,7 @@ defmodule Altar.MixProject do
     [
       plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
       plt_add_apps: [:mix, :ex_unit],
-      flags: [:unmatched_returns, :error_handling, :race_conditions, :underspecs],
+      flags: [:unmatched_returns, :error_handling, :underspecs],
       ignore_warnings: ".dialyzer_ignore.exs",
       list_unused_filters: true
     ]
