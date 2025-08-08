@@ -20,7 +20,8 @@ defmodule ALTAR.MixProject do
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Altar, []}
     ]
   end
 
@@ -42,7 +43,8 @@ defmodule ALTAR.MixProject do
       links: %{
         "GitHub" => @source_url,
         "Sponsor" => "https://github.com/sponsors/nshkrdotcom",
-        "Specification" => "https://github.com/nshkrdotcom/ALTAR/tree/main/.kiro/specs/altar-protocol"
+        "Specification" =>
+          "https://github.com/nshkrdotcom/ALTAR/tree/main/.kiro/specs/altar-protocol"
       },
       files: ~w(lib assets priv .formatter.exs mix.exs README* LICENSE* CHANGELOG* docs)
     ]
@@ -51,7 +53,15 @@ defmodule ALTAR.MixProject do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "LICENSE", "priv/docs/202507803_ALTAR_spec_draft.md", "priv/docs/20250803_kiroSpecFinished_NextSteps.md", "priv/docs/specs/altar-protocol/design.md", "priv/docs/specs/altar-protocol/requirements.md", "priv/docs/specs/altar-protocol/tasks.md"],
+      extras: [
+        "README.md",
+        "LICENSE",
+        "priv/docs/202507803_ALTAR_spec_draft.md",
+        "priv/docs/20250803_kiroSpecFinished_NextSteps.md",
+        "priv/docs/specs/altar-protocol/design.md",
+        "priv/docs/specs/altar-protocol/requirements.md",
+        "priv/docs/specs/altar-protocol/tasks.md"
+      ],
       assets: %{"assets" => "assets"},
       logo: "assets/altar-logo.svg",
       source_ref: "v#{@version}",

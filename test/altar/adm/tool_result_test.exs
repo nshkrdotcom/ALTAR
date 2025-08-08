@@ -27,13 +27,19 @@ defmodule Altar.ADM.ToolResultTest do
     end
 
     test "fails when is_error is not a boolean" do
-      assert {:error, "is_error must be a boolean"} = ToolResult.new(%{call_id: "c1", is_error: 1})
-      assert {:error, "is_error must be a boolean"} = ToolResult.new(%{call_id: "c1", is_error: "yes"})
+      assert {:error, "is_error must be a boolean"} =
+               ToolResult.new(%{call_id: "c1", is_error: 1})
+
+      assert {:error, "is_error must be a boolean"} =
+               ToolResult.new(%{call_id: "c1", is_error: "yes"})
     end
 
     test "fails when is_error is true but content does not include error key" do
       assert {:error, _} = ToolResult.new(%{call_id: "c1", is_error: true, content: :oops})
-      assert {:error, _} = ToolResult.new(%{call_id: "c1", is_error: true, content: %{reason: "no key"}})
+
+      assert {:error, _} =
+               ToolResult.new(%{call_id: "c1", is_error: true, content: %{reason: "no key"}})
+
       assert {:error, _} = ToolResult.new(%{call_id: "c1", is_error: true})
     end
   end

@@ -61,12 +61,20 @@ defmodule Altar.ADM.ToolConfig do
     end
   end
 
-  @spec optional_string_list(map(), atom(), [String.t()]) :: {:ok, [String.t()]} | {:error, String.t()}
+  @spec optional_string_list(map(), atom(), [String.t()]) ::
+          {:ok, [String.t()]} | {:error, String.t()}
   defp optional_string_list(attrs, key, default) do
     case Map.fetch(attrs, key) do
-      {:ok, value} when is_list(value) -> if Enum.all?(value, &is_binary/1), do: {:ok, value}, else: {:error, "#{key} must be a list of strings"}
-      {:ok, _} -> {:error, "#{key} must be a list of strings"}
-      :error -> {:ok, default}
+      {:ok, value} when is_list(value) ->
+        if Enum.all?(value, &is_binary/1),
+          do: {:ok, value},
+          else: {:error, "#{key} must be a list of strings"}
+
+      {:ok, _} ->
+        {:error, "#{key} must be a list of strings"}
+
+      :error ->
+        {:ok, default}
     end
   end
 

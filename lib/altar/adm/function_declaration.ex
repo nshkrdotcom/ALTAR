@@ -73,7 +73,8 @@ defmodule Altar.ADM.FunctionDeclaration do
   end
 
   @spec validate_non_empty_string(String.t(), String.t()) :: :ok | {:error, String.t()}
-  defp validate_non_empty_string(value, field_name) when is_binary(value) and is_binary(field_name) do
+  defp validate_non_empty_string(value, field_name)
+       when is_binary(value) and is_binary(field_name) do
     if String.trim(value) == "" do
       {:error, "#{field_name} cannot be empty"}
     else

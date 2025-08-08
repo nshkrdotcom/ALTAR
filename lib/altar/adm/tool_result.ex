@@ -46,7 +46,8 @@ defmodule Altar.ADM.ToolResult do
              is_error: is_error
            }}
 
-        {:error, reason} -> {:error, reason}
+        {:error, reason} ->
+          {:error, reason}
       end
     else
       {:error, reason} -> {:error, reason}
@@ -56,8 +57,12 @@ defmodule Altar.ADM.ToolResult do
   @spec validate_content_for_error(any(), boolean()) :: :ok | {:error, String.t()}
   defp validate_content_for_error(content, true) do
     cond do
-      is_map(content) and Map.has_key?(content, :error) -> :ok
-      is_map(content) and Map.has_key?(content, "error") -> :ok
+      is_map(content) and Map.has_key?(content, :error) ->
+        :ok
+
+      is_map(content) and Map.has_key?(content, "error") ->
+        :ok
+
       true ->
         {:error,
          "for is_error: true, content should include an :error key (e.g., %{error: \"description\"})"}
@@ -84,7 +89,8 @@ defmodule Altar.ADM.ToolResult do
     end
   end
 
-  @spec require_non_empty_string(map(), atom(), String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec require_non_empty_string(map(), atom(), String.t()) ::
+          {:ok, String.t()} | {:error, String.t()}
   defp require_non_empty_string(attrs, key, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_binary(value) ->
@@ -94,12 +100,16 @@ defmodule Altar.ADM.ToolResult do
           {:ok, value}
         end
 
-      {:ok, _} -> {:error, "#{label} must be a string"}
-      :error -> {:error, "missing required #{label}"}
+      {:ok, _} ->
+        {:error, "#{label} must be a string"}
+
+      :error ->
+        {:error, "missing required #{label}"}
     end
   end
 
-  @spec optional_boolean(map(), atom(), boolean(), String.t()) :: {:ok, boolean()} | {:error, String.t()}
+  @spec optional_boolean(map(), atom(), boolean(), String.t()) ::
+          {:ok, boolean()} | {:error, String.t()}
   defp optional_boolean(attrs, key, default, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_boolean(value) -> {:ok, value}

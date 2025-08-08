@@ -25,7 +25,9 @@ defmodule Altar.ADM.ToolConfigTest do
 
     test "fails when mode is invalid" do
       assert {:error, "mode must be one of :auto | :any | :none"} = ToolConfig.new(%{mode: :all})
-      assert {:error, "mode must be one of :auto | :any | :none"} = ToolConfig.new(%{mode: "auto"})
+
+      assert {:error, "mode must be one of :auto | :any | :none"} =
+               ToolConfig.new(%{mode: "auto"})
     end
 
     test "fails when function_names is not a list of strings" do

@@ -65,7 +65,8 @@ defmodule Altar.ADM.FunctionCall do
     end
   end
 
-  @spec require_non_empty_string(map(), atom(), String.t()) :: {:ok, String.t()} | {:error, String.t()}
+  @spec require_non_empty_string(map(), atom(), String.t()) ::
+          {:ok, String.t()} | {:error, String.t()}
   defp require_non_empty_string(attrs, key, label) do
     case Map.fetch(attrs, key) do
       {:ok, value} when is_binary(value) ->
@@ -75,8 +76,11 @@ defmodule Altar.ADM.FunctionCall do
           {:ok, value}
         end
 
-      {:ok, _} -> {:error, "#{label} must be a string"}
-      :error -> {:error, "missing required #{label}"}
+      {:ok, _} ->
+        {:error, "#{label} must be a string"}
+
+      :error ->
+        {:error, "missing required #{label}"}
     end
   end
 

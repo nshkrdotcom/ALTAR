@@ -13,7 +13,8 @@ defmodule Altar.ADM do
   @doc """
   Create a new `FunctionDeclaration` via validated constructor.
   """
-  @spec new_function_declaration(map() | keyword()) :: {:ok, FunctionDeclaration.t()} | {:error, String.t()}
+  @spec new_function_declaration(map() | keyword()) ::
+          {:ok, FunctionDeclaration.t()} | {:error, String.t()}
   def new_function_declaration(attrs), do: FunctionDeclaration.new(attrs)
 
   @doc """
