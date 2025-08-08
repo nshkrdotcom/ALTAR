@@ -12,8 +12,8 @@
 
 <p align="center">
     <a href="https://hex.pm/packages/altar"><img src="https://img.shields.io/hexpm/v/altar.svg?style=flat-square" alt="Hex.pm Version"></a>
-    <a href="specs/01-data-model/README.md"><img src="https://img.shields.io/badge/spec-v1.0-blue" alt="Spec Version"></a>
-    <a href="https://github.com/nshkrdotcom/altar/actions"><img src="https://img.shields.io/github/actions/workflow/status/nshkrdotcom/altar/elixir.yml?branch=main&style=flat-square" alt="Build Status"></a>
+    <a href="specs/01-data-model/README.md"><img src="https://img.shields.io/badge/spec-v1.0-blue?style=flat-square" alt="Spec v1.0"></a>
+    <a href="https://github.com/nshkrdotcom/ALTAR/actions"><img src="https://img.shields.io/github/actions/workflow/status/nshkrdotcom/ALTAR/elixir.yml?branch=main&style=flat-square" alt="Build Status"></a>
     <a href="LICENSE"><img src="https://img.shields.io/hexpm/l/altar?style=flat-square" alt="License"></a>
 </p>
 
@@ -86,40 +86,96 @@ graph TD
 
 3.  **[ALTAR Data Model (ADM)](specs/01-data-model/README.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
 
-## Key Features
+## Getting Started with the Elixir Implementation
 
-*   🚀 **Seamless Promotion Path**: The core value proposition. Move from a local LATER runtime to a distributed GRID backend by changing a single line of configuration. No code changes required.
+This repository contains the canonical Elixir implementation of the ALTAR protocol. You can use it today to build robust, locally-executed tools in your Elixir applications.
 
-*   🤝 **Unmatched Interoperability**: Don't rewrite your existing tools. ALTAR provides bi-directional adapters for popular frameworks like **LangChain** and **Semantic Kernel**, meeting you where you are.
+### 1. Installation
 
-*   🛡️ **Enterprise Security Out-of-the-Box**: GRID's Host-centric security model shifts security from a developer's responsibility to a platform guarantee. With the **Altar Enterprise Security Profile (AESP)**, you get a pre-built control plane for RBAC, audit logging, and policy enforcement.
+Add `altar` to your list of dependencies in `mix.exs`:
 
-*   🌐 **Language-Agnostic Scalability**: The GRID protocol allows you to run and scale tool runtimes written in any language (Python, Go, TypeScript, etc.) independently from the host application, optimizing performance and cost.
+```elixir
+def deps do
+  [
+    {:altar, "~> 0.0.1"}
+  ]
+end
+```
 
-*   🔍 **Built-in Observability**: First-class support for correlation IDs and metadata enables easy end-to-end tracing across local and distributed calls.
+### 2. Add the Supervisor
 
-*   📦 **Stateful Sessions**: Isolate context, state, and toolsets for different users or workflows, a critical feature for building robust, multi-turn AI applications.
+To use the local runtime, add the `Altar.Supervisor` to your application's supervision tree. This starts the named Registry process.
 
-## Project Status & Implementations
+```elixir
+# in your application.ex
+children = [
+  {Altar.Supervisor, name: MyApp.AltarSupervisor}
+]
+```
 
-**The v1.0 specifications for all three layers are complete and represent a unified, strategic vision for bridging the development-to-production gap.**
+### 3. Define and Register a Tool
 
-This repository serves as the home for the protocol specifications and the **canonical Elixir implementation** of the ecosystem.
+Create a module for your tools. Then, in your application's startup logic, create a validated `FunctionDeclaration` and register your tool's implementation with the Registry.
 
-#### 1. Canonical Elixir Host & LATER Implementation (This Repository)
+```elixir
+defmodule MyApp.Tools do
+  # A simple tool function that accepts a map of arguments.
+  def get_weather(%{"location" => location, "unit" => unit}) do
+    # ... logic to fetch weather ...
+    %{temperature: 72, unit: unit, forecast: "Sunny"}
+  end
+end
 
-The `lib/` directory contains the Elixir implementation of:
-*   The **ALTAR Data Model** (`lib/altar/data_model/`)
-*   The **LATER Protocol** (`lib/altar/later/`), providing a simple `use LATER.Tools` interface for Elixir developers.
-*   The **GRID Protocol Host** (`lib/altar/grid/`), an OTP-based orchestration engine for managing distributed runtimes.
+# In your application startup or an initializer
+{:ok, decl} = Altar.ADM.new_function_declaration(%{
+  name: "get_weather",
+  description: "Gets the current weather for a specified location.",
+  parameters: %{}
+})
 
-This allows an Elixir application (like one using `gemini_ex`) to both define its own local tools and orchestrate a fleet of remote, polyglot tool runtimes.
+:ok = Altar.LATER.Registry.register_tool(
+  Altar.LATER.Registry, # The globally registered name
+  decl,
+  &MyApp.Tools.get_weather/1
+)
+```
 
-#### 2. Reference Runtimes
+### 4. Execute a Tool
 
-The `runtimes/` directory will contain reference implementations of lightweight GRID runtime SDKs for other languages (Python, TypeScript, Go). A developer wanting to expose their tools will only need to `pip install altar-grid-runtime`, add a decorator to their functions, and point it at the central Elixir Host.
+Simulate an LLM's request by creating a `FunctionCall` and passing it to the Executor.
 
-## Documentation
+```elixir
+{:ok, call} = Altar.ADM.new_function_call(%{
+  call_id: "call_123",
+  name: "get_weather",
+  args: %{"location" => "Honolulu, HI", "unit" => "fahrenheit"}
+})
+
+# The executor is stateless and pure
+{:ok, result} = Altar.LATER.Executor.execute_tool(Altar.LATER.Registry, call)
+
+# result is now a validated %Altar.ADM.ToolResult{}
+# %Altar.ADM.ToolResult{
+#   call_id: "call_123",
+#   content: %{temperature: 72, unit: "fahrenheit", forecast: "Sunny"},
+#   is_error: false
+# }
+```
+
+## Project Status & Roadmap
+
+This monorepo contains both the protocol specifications and the canonical Elixir implementation.
+
+*   ✅ **Protocol Specifications (v1.0):** The specs for `ADM`, `LATER`, and `GRID` are complete and can be found in the `/specs` directory. They represent a stable vision.
+
+*   ✅ **Elixir Implementation (`/lib`):**
+    *   `Altar.ADM`: Complete and fully tested.
+    *   `Altar.LATER`: Core `Registry` and `Executor` are complete and fully tested.
+    *   `Altar.GRID Host`: Under active development.
+
+*   ⏳ **Reference Runtimes (`/runtimes`):** Reference implementations for other languages (Python, TypeScript) are planned and will reside in this repository.
+
+## Protocol Specifications
 
 The complete protocol specifications can be found in the `specs/` directory. They have been updated to reflect the platform's focus on productivity and interoperability.
 
