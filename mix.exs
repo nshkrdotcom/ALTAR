@@ -90,7 +90,14 @@ defmodule Altar.MixProject do
     [
       main: "Altar",
       logo: "assets/altar-logo.svg",
-      extras: ["README.md", "LICENSE"],
+      extras: [
+        "README.md",
+        "LICENSE",
+        "priv/docs/specs/01-data-model/README.md",
+        "priv/docs/specs/02-later-protocol/README.md",
+        "priv/docs/specs/03-grid-protocol/README.md",
+        "priv/docs/specs/03-grid-protocol/aesp.md"
+      ],
       groups_for_modules: [
         "Core Protocol": [
           Altar,
