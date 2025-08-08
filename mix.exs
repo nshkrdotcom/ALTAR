@@ -88,16 +88,16 @@ defmodule Altar.MixProject do
 
   defp docs do
     [
-      main: "Altar",
+      main: "readme",
       assets: %{"assets" => "assets"},
       logo: "assets/altar-logo.svg",
       extras: [
-        "README.md",
-        "LICENSE",
-        "priv/docs/specs/01-data-model/README.md",
-        "priv/docs/specs/02-later-protocol/README.md",
-        "priv/docs/specs/03-grid-protocol/README.md",
-        "priv/docs/specs/03-grid-protocol/aesp.md"
+        "README.md": [filename: "readme", title: "Overview"],
+        "LICENSE": [filename: "license", title: "License"],
+        "priv/docs/specs/01-data-model/README.md": [filename: "adm-data-model", title: "ADM Data Model"],
+        "priv/docs/specs/02-later-protocol/README.md": [filename: "later-protocol", title: "LATER Protocol"],
+        "priv/docs/specs/03-grid-protocol/README.md": [filename: "grid-protocol", title: "GRID Protocol"],
+        "priv/docs/specs/03-grid-protocol/aesp.md": [filename: "grid-aesp", title: "GRID Enterprise Security Profile (AESP)"]
       ],
       groups_for_modules: [
         "Core Protocol": [
