@@ -115,6 +115,9 @@ defmodule Altar.MixProject do
           Altar.LATER.Executor
         ]
       ],
+      skip_undefined_reference_warnings_on: [
+        "priv/docs/specs/02-later-protocol/README.md"
+      ],
       before_closing_head_tag: &mermaid_script/1,
       source_ref: "v#{@version}",
       source_url: @source_url
