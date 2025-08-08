@@ -89,6 +89,7 @@ defmodule Altar.MixProject do
   defp docs do
     [
       main: "Altar",
+      assets: %{"assets" => "assets"},
       logo: "assets/altar-logo.svg",
       extras: [
         "README.md",
