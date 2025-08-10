@@ -3858,20 +3858,7 @@ The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric sec
   "contracts": [
     {
       "name": "financial_data_processor",
-      "version": "2.1.0",
       "description": "Processes financial transactions and generates compliance reports",
-      "runtime_requirements": {
-        "language": "python",
-        "version": ">=3.9",
-        "memory_limit": "2GB",
-        "execution_timeout": 300
-      },
-      "security_profile": {
-        "isolation_level": "high",
-        "network_access": "restricted",
-        "file_system_access": "read_only",
-        "required_permissions": ["financial_data_read", "report_generation"]
-      },
       "function_declarations": [
         {
           "name": "process_transactions",
@@ -3936,20 +3923,7 @@ The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric sec
     },
     {
       "name": "customer_service_assistant",
-      "version": "1.3.2",
       "description": "AI-powered customer service tools for ticket management and knowledge base queries",
-      "runtime_requirements": {
-        "language": "javascript",
-        "version": ">=18.0",
-        "memory_limit": "1GB",
-        "execution_timeout": 120
-      },
-      "security_profile": {
-        "isolation_level": "medium",
-        "network_access": "api_only",
-        "file_system_access": "none",
-        "required_permissions": ["customer_data_read", "ticket_management"]
-      },
       "function_declarations": [
         {
           "name": "search_knowledge_base",
@@ -3995,15 +3969,11 @@ The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric sec
     "owner": "platform-security-team",
     "environment": "production",
     "description": "Production-approved tool manifest for financial services platform",
-    "created_by": "security-admin@company.com",
-    "approved_by": "ciso@company.com",
-    "approval_date": "2025-02-01T10:00:00Z",
-    "next_review_date": "2025-05-01T10:00:00Z",
-    "compliance_framework": "SOX,PCI-DSS,GDPR",
-    "risk_assessment_id": "RA-2025-001"
+    "created_by": "security-admin@company.com"
   }
 }
 ```
+> **Note on Progressive Enhancement:** This example demonstrates a manifest with universal tool contracts. For a comprehensive example showing an enterprise-grade manifest enriched with advanced security, governance, and compliance metadata (such as `runtime_requirements`, `security_profile`, and `approval_status`), please refer to the **AESP (ALTAR Enterprise Security Profile)** specification in `priv/docs/specs/03-grid-protocol/aesp.md`.
 
 **Development Environment Manifest**
 ```json
