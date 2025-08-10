@@ -749,36 +749,36 @@ sequenceDiagram
     participant L as Local LATER Runtime
 
     Note over C,H: Phase 1: Lightweight Authorization
-    C->>+H: AuthorizeToolCallRequest(session_id, security_context, call, correlation_id)
+    C->>H: AuthorizeToolCallRequest(session_id, security_context, call, correlation_id)
     H->>H: Validate session and security context
     H->>H: Run RBAC & policy checks against call
     H->>H: Generate invocation_id for correlation
+    
     alt Authorization approved
-        H-->>-C: AuthorizeToolCallResponse(APPROVED, invocation_id, correlation_id)
+        H->>C: AuthorizeToolCallResponse(APPROVED, invocation_id, correlation_id)
     else Authorization denied
-        H-->>-C: AuthorizeToolCallResponse(DENIED, error, correlation_id)
+        H->>C: AuthorizeToolCallResponse(DENIED, error, correlation_id)
         Note over C: Execution must not proceed
     end
 
     Note over C,L: Phase 2: Zero-Latency Local Execution
     alt Authorization was approved
-        C->>+L: Execute tool locally (no network latency)
+        C->>L: Execute tool locally (no network latency)
         L->>L: Execute business logic
-        L-->>-C: ToolResult (local execution)
+        L->>C: ToolResult (local execution)
     end
 
     Note over C,H: Phase 3: Asynchronous Audit Compliance
     C->>H: LogToolResultRequest(session_id, invocation_id, correlation_id, result, execution_metadata)
-    activate H
     H->>H: Validate invocation_id matches authorization
     H->>H: Log execution result for audit compliance
+    
     alt Valid invocation_id
-        H-->>C: LogToolResultResponse(LOGGED, correlation_id)
+        H->>C: LogToolResultResponse(LOGGED, correlation_id)
     else Invalid invocation_id
-        H-->>C: LogToolResultResponse(REJECTED, error, correlation_id)
+        H->>C: LogToolResultResponse(REJECTED, error, correlation_id)
         Note over H: Security violation logged
     end
-    deactivate H
 ```
 
 **Performance Benefits:**
