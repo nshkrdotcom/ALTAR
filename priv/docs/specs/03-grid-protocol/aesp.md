@@ -21,6 +21,16 @@ AESP extends the GRID protocol through three primary mechanisms, ensuring that a
 *   **Message Replacement:** AESP selectively replaces certain base GRID protocol messages with enterprise-specific counterparts. These extended messages (e.g., `EnterpriseSecurityContext`) are supersets of the base messages, carrying additional data required for fine-grained policy enforcement, auditability, and governance.
 *   **Stricter Security:** AESP elevates GRID's security posture from a recommendation to a requirement. It mandates specific security controls, such as mTLS 1.3+ for all transport, integration with enterprise identity providers (IdPs), and the maintenance of an immutable audit log.
 
+### 1.3. Incremental Adoption: AESP Compliance Tiers
+
+Achieving full AESP compliance is a significant undertaking. To facilitate this, Level 3 is broken down into three distinct, sequential tiers: Foundation, Advanced, and Complete. Each tier builds upon the last and represents a significant milestone in enterprise readiness.
+
+| Tier | Core Components | Primary Value Proposition |
+| :--- | :--- | :--- |
+| **Level 3 Foundation** <br/> *(Secure Core)* | Identity Manager, RBAC Engine, Audit Manager, Tenant Manager, Session Manager | Provides a secure, multi-tenant, and fully auditable foundation for tool execution. Ensures all interactions are authenticated and authorized against a central identity system. |
+| **Level 3 Advanced** <br/> *(Governed Operation)* | *All `Foundation` components, plus:* <br/> Policy Engine, Governance Manager | Introduces programmatic control over system behavior. Enables fine-grained policy enforcement (e.g., with CEL) and formal, auditable approval workflows for critical changes. |
+| **Level 3 Complete** <br/> *(Fully Managed Platform)* | *All `Advanced` components, plus:* <br/> API Gateway, Cost Manager, Configuration Manager | Achieves full operational maturity. Provides a secure and scalable entry point, enables financial governance and cost attribution, and allows for dynamic, zero-downtime operational control. |
+
 ## 2. AESP Architecture: The Control Plane Model
 
 To achieve AESP compliance, a GRID Host must be implemented as part of a comprehensive **AESP Control Plane**. This architecture provides the centralized management, security, and governance functions required for enterprise operations.
