@@ -615,10 +615,9 @@ sequenceDiagram
     H->>H: 3. Validate `args` against trusted ADM Schema
     H->>H: 4. Find fulfilling Runtime (e.g., RT)
     H->>H: 5. Generate invocation_id for tracking
-    
+
     alt Tool call authorized and valid
         H->>RT: ToolCall(invocation_id, correlation_id, ADM.FunctionCall)
-        deactivate H
         activate RT
         RT->>RT: Execute function logic...
         
@@ -628,15 +627,14 @@ sequenceDiagram
             RT->>H: ToolResult(invocation_id, correlation_id, ADM.ToolResult[error])
         end
         deactivate RT
-        activate H
+        
         H->>H: Process result, log telemetry with correlation_id
         H-->>C: ToolResult(correlation_id, ADM.ToolResult)
-        deactivate H
     else Authorization failed or validation error
         H->>H: Generate EnhancedError with correlation_id
         H-->>C: EnhancedError(correlation_id, error_details)
-        deactivate H
     end
+    deactivate H
 
     Note over C,RT: Correlation ID Tracking
     Note over C,RT: correlation_id flows through entire request lifecycle
