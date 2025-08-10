@@ -1,7 +1,7 @@
 defmodule Altar.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.3"
   @source_url "https://github.com/nshkrdotcom/ALTAR"
 
   def project do
@@ -93,11 +93,23 @@ defmodule Altar.MixProject do
       logo: "assets/altar-logo.svg",
       extras: [
         "README.md": [filename: "readme", title: "Overview"],
-        "LICENSE": [filename: "license", title: "License"],
-        "priv/docs/specs/01-data-model/data-model.md": [filename: "adm-data-model", title: "ADM Data Model"],
-        "priv/docs/specs/02-later-protocol/later-protocol.md": [filename: "later-protocol", title: "LATER Protocol"],
-        "priv/docs/specs/03-grid-protocol/grid-protocol.md": [filename: "grid-protocol", title: "GRID Protocol"],
-        "priv/docs/specs/03-grid-protocol/aesp.md": [filename: "grid-aesp", title: "GRID Enterprise Security Profile (AESP)"],
+        LICENSE: [filename: "license", title: "License"],
+        "priv/docs/specs/01-data-model/data-model.md": [
+          filename: "adm-data-model",
+          title: "ADM Data Model"
+        ],
+        "priv/docs/specs/02-later-protocol/later-protocol.md": [
+          filename: "later-protocol",
+          title: "LATER Protocol"
+        ],
+        "priv/docs/specs/03-grid-protocol/grid-protocol.md": [
+          filename: "grid-protocol",
+          title: "GRID Protocol"
+        ],
+        "priv/docs/specs/03-grid-protocol/aesp.md": [
+          filename: "grid-aesp",
+          title: "GRID Enterprise Security Profile (AESP)"
+        ],
         "CHANGELOG.md": [filename: "changelog", title: "Release Notes"]
       ],
       groups_for_modules: [
