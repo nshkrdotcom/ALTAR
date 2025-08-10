@@ -466,7 +466,5 @@ To facilitate interoperability and gradual adoption, GRID defines several compli
     -   Must implement the `StreamChunk` message for streaming results.
     -   Must support the `SecurityContext` for multi-tenancy and advanced auth.
 
--   **Level 3 (Enterprise):** A full-featured, high-security implementation.
-    -   Compliance for this level is defined by the separate **Altar Enterprise Security Profile (AESP)**.
-    -   Includes features like detailed audit logging, resource management, and advanced policy enforcement.
-    -   See: `aesp.md` for the complete AESP specification.
+-   **Level 3 (Enterprise):** A full-featured, high-security implementation suitable for regulated environments. Compliance for this level is defined by the separate **AESP (ALTAR Enterprise Security Profile)**, which is structured into incremental tiers (Foundation, Advanced, and Complete) to facilitate adoption. AESP mandates a comprehensive control plane architecture for identity, policy, audit, and governance.
+    -   See: `aesp.md` for the complete AESP specification and its compliance tiers.
