@@ -15,6 +15,7 @@ By aligning with proven, real-world schemas, the ADM provides a reliable and lan
 - Defining function parameter schemas and validation rules
 - Structuring function call requests and responses
 - Handling errors and reporting status
+- Managing trusted tool manifests for Host-centric security models
 
 ### 1.2. Three-Layer Architecture
 
@@ -248,7 +249,7 @@ var admSchema = admGenerator.ImportFromSKPlugin(new WeatherPlugin());
 
 ## 4. Core Data Structures
 
-The following sections define the complete set of data structures that form the ADM specification. Each structure includes comprehensive field documentation, validation rules, and practical examples.
+The following sections define the complete set of data structures that form the ADM specification. The core exportable data structures include `Tool`, `FunctionCall`, `ToolResult`, and `ToolManifest`, each serving distinct roles in the ALTAR ecosystem. Each structure includes comprehensive field documentation, validation rules, and practical examples.
 
 ### 4.1. Tool Structure
 
@@ -2067,10 +2068,23 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `call_id` | `String` | Yes | Unique, client-generated identifier for this specific function call, used for idempotency and correlation |
 | `name` | `String` | Yes | Name of the function to invoke, must match a FunctionDeclaration name |
 | `args` | `Map<String, Any>` | Yes | Arguments to pass to the function, must conform to the function's parameter schema |
 
 #### 4.4.2. Field Specifications
+
+**call_id**
+- **Type:** String
+- **Required:** Yes
+- **Purpose:** Provides a unique identifier for this specific function call to enable end-to-end tracing, idempotency, and correlation between requests and responses
+- **Constraints:** 
+  - Must be a unique, client-generated identifier
+  - Should be a UUID v4 or similarly high-entropy, unique string to prevent collisions in distributed environments
+  - Must be non-empty and contain only printable ASCII characters
+  - Maximum length of 128 characters
+- **Usage:** Enables correlation between FunctionCall and ToolResult, supports idempotency for retry scenarios, and provides traceability for debugging and audit purposes
+- **Best Practices:** Use UUID v4 format for maximum uniqueness and compatibility across systems
 
 **name**
 - **Type:** String
@@ -2101,17 +2115,24 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 
 #### 4.4.3. Validation Rules
 
-1. **Function Reference Validation:**
+1. **Call ID Validation:**
+   - The `call_id` field must be present and non-empty
+   - Must be a unique identifier within the context of the calling system
+   - Should follow UUID v4 format for maximum compatibility and uniqueness
+   - Must not exceed 128 characters in length
+   - Must contain only printable ASCII characters
+
+2. **Function Reference Validation:**
    - The `name` field must reference an existing FunctionDeclaration in the associated Tool
    - Function name matching is case-sensitive and must be exact
 
-2. **Parameter Validation:**
+3. **Parameter Validation:**
    - All arguments in `args` must conform to the parameter schema defined in the referenced FunctionDeclaration
    - Required parameters must be present in the args map
    - Parameter types must match their schema definitions exactly
    - Enum constraints must be respected for string parameters
 
-3. **JSON Serialization:**
+4. **JSON Serialization:**
    - All values in the `args` map must be JSON-serializable
    - Complex objects must conform to their nested schema definitions
    - Arrays must contain elements of the correct type as defined in the schema
@@ -2122,6 +2143,13 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 {
   "type": "object",
   "properties": {
+    "call_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[\\x20-\\x7E]+$",
+      "description": "Unique, client-generated identifier for this function call"
+    },
     "name": {
       "type": "string",
       "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$",
@@ -2132,7 +2160,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
       "description": "Function arguments as key-value pairs"
     }
   },
-  "required": ["name", "args"],
+  "required": ["call_id", "name", "args"],
   "additionalProperties": false
 }
 ```
@@ -2142,6 +2170,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Simple Function Call with Basic Parameters**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "name": "get_weather_forecast",
   "args": {
     "location": "San Francisco, CA",
@@ -2154,6 +2183,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Function Call with No Parameters**
 ```json
 {
+  "call_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
   "name": "get_system_status",
   "args": {}
 }
@@ -2162,6 +2192,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Complex Function Call with Nested Objects**
 ```json
 {
+  "call_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
   "name": "schedule_meeting",
   "args": {
     "title": "Project Planning Session",
@@ -2195,6 +2226,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Function Call with Array Parameters**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "process_financial_data",
   "args": {
     "transactions": [
@@ -2241,6 +2273,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Function Call with String Enumeration**
 ```json
 {
+  "call_id": "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
   "name": "create_support_ticket",
   "args": {
     "title": "Unable to access dashboard",
@@ -2266,6 +2299,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **STRING Parameters**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d480",
   "name": "send_notification",
   "args": {
     "message": "Your order has been shipped",
@@ -2278,6 +2312,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **NUMBER and INTEGER Parameters**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d481",
   "name": "calculate_compound_interest",
   "args": {
     "principal": 10000.50,      // NUMBER type
@@ -2291,6 +2326,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **BOOLEAN Parameters**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d482",
   "name": "update_user_preferences",
   "args": {
     "user_id": "user_123",
@@ -2304,6 +2340,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **ARRAY Parameters with Different Element Types**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d483",
   "name": "batch_process_items",
   "args": {
     "item_ids": ["item_1", "item_2", "item_3"],  // Array of strings
@@ -2317,6 +2354,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Real-World E-commerce Function Call**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440001",
   "name": "process_order",
   "args": {
     "order": {
@@ -2376,6 +2414,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **AI Model Configuration Function Call**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440002",
   "name": "configure_ai_model",
   "args": {
     "model_config": {
@@ -2434,6 +2473,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Complex Data Analytics Function Call**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440003",
   "name": "analyze_business_metrics",
   "args": {
     "analysis_request": {
@@ -2551,6 +2591,7 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 **Multi-Cloud Infrastructure Management Function Call**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440004",
   "name": "manage_cloud_infrastructure",
   "args": {
     "operation": "deploy_multi_region",
@@ -2744,17 +2785,28 @@ The `FunctionCall` structure represents a request to invoke a specific function 
 
 The FunctionCall structure design emphasizes:
 
-1. **Simplicity:** Minimal structure with only essential fields (name and args)
-2. **Type Safety:** Arguments must conform to declared parameter schemas
-3. **Industry Compatibility:** Aligns with Google Gemini and OpenAI function calling patterns
-4. **JSON Serialization:** All arguments must be JSON-serializable for cross-language compatibility
-5. **Validation Clarity:** Clear rules for parameter validation and function reference checking
+1. **Traceability:** Unique call_id enables end-to-end tracing and correlation between requests and responses
+2. **Idempotency:** Client-generated call_id supports safe retry mechanisms and duplicate detection
+3. **Simplicity:** Minimal structure with only essential fields (call_id, name, and args)
+4. **Type Safety:** Arguments must conform to declared parameter schemas
+5. **Industry Compatibility:** Aligns with Google Gemini and OpenAI function calling patterns while adding enterprise-grade tracking
+6. **JSON Serialization:** All arguments must be JSON-serializable for cross-language compatibility
+7. **Validation Clarity:** Clear rules for parameter validation and function reference checking
 
 #### 4.4.8. Implementation Notes
 
 **Validation Implementation:**
 ```javascript
 function validateFunctionCall(functionCall, tool) {
+  // Validate call_id presence and format
+  if (!functionCall.call_id || typeof functionCall.call_id !== 'string') {
+    throw new Error('call_id is required and must be a non-empty string');
+  }
+  
+  if (functionCall.call_id.length > 128) {
+    throw new Error('call_id must not exceed 128 characters');
+  }
+  
   // Find the function declaration
   const functionDecl = tool.function_declarations.find(
     decl => decl.name === functionCall.name
@@ -2770,6 +2822,9 @@ function validateFunctionCall(functionCall, tool) {
 ```
 
 **Common Validation Errors:**
+- Missing or empty call_id field
+- call_id exceeding maximum length of 128 characters
+- call_id containing non-printable characters
 - Function name not found in tool declarations
 - Missing required parameters in args
 - Parameter type mismatches (e.g., string instead of integer)
@@ -2778,11 +2833,14 @@ function validateFunctionCall(functionCall, tool) {
 - Additional parameters not defined in schema
 
 **Best Practices:**
+- Generate call_id using UUID v4 format for maximum uniqueness and compatibility
+- Store call_id mappings for correlation between requests and responses
+- Use call_id for idempotency checks to prevent duplicate execution
 - Always validate function calls against their declarations before execution
 - Provide clear error messages for validation failures
 - Ensure all argument values are JSON-serializable
 - Consider parameter sanitization for security
-- Log function calls for debugging and audit purposes
+- Log function calls with call_id for debugging and audit purposes
 
 ### 4.5. ToolResult Structure
 
@@ -2792,6 +2850,7 @@ The `ToolResult` structure represents the response from a function call executio
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `call_id` | `String` | Yes | Unique identifier that correlates to the originating FunctionCall |
 | `name` | `String` | Yes | Name of the function that was invoked |
 | `status` | `ResultStatus` | Yes | Execution status indicating success or failure |
 | `content` | `Object` | Conditional | Result data (required when status is SUCCESS) |
@@ -2816,6 +2875,17 @@ The `ErrorObject` provides structured error information:
 | `type` | `String` | No | Standardized error code for programmatic handling |
 
 #### 4.5.4. Field Specifications
+
+**call_id**
+- **Type:** String
+- **Required:** Yes
+- **Purpose:** Correlates this result to the originating FunctionCall for end-to-end traceability
+- **Constraints:**
+  - **Matching:** Must exactly match the `call_id` from the corresponding `FunctionCall` that generated this result
+  - **Format:** Must be non-empty and contain only printable ASCII characters
+  - **Length:** Maximum length of 128 characters
+- **Usage:** Enables correlation between FunctionCall and ToolResult, supports idempotency for retry scenarios, and provides traceability for debugging and audit purposes
+- **Best Practices:** Should match the UUID v4 format used in the originating FunctionCall
 
 **name**
 - **Type:** String
@@ -2875,17 +2945,23 @@ The `ErrorObject` provides structured error information:
 
 #### 4.5.6. Validation Rules
 
-1. **Discriminated Union Validation:**
+1. **Call ID Validation:**
+   - The `call_id` field must be present and non-empty
+   - Must exactly match the `call_id` from the corresponding `FunctionCall`
+   - Must be a unique identifier within the context of the calling system
+   - Should follow UUID v4 format for maximum compatibility and uniqueness
+
+2. **Discriminated Union Validation:**
    - When status is "SUCCESS", the `content` field must be present and `error` field must be absent
    - When status is "ERROR", the `error` field must be present and `content` field must be absent
    - Both `content` and `error` fields cannot be present simultaneously
 
-2. **Content Validation:**
+3. **Content Validation:**
    - Content must be JSON-serializable
    - Content can be any valid JSON type (object, array, string, number, boolean, null)
    - Complex objects should follow consistent structure patterns
 
-3. **Error Validation:**
+4. **Error Validation:**
    - Error message must be non-empty string
    - Error type, if present, should follow consistent naming conventions
    - Error information should not expose sensitive system details
@@ -2896,6 +2972,12 @@ The `ErrorObject` provides structured error information:
 {
   "type": "object",
   "properties": {
+    "call_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "description": "Unique identifier that correlates to the originating FunctionCall"
+    },
     "name": {
       "type": "string",
       "pattern": "^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$",
@@ -2927,7 +3009,7 @@ The `ErrorObject` provides structured error information:
       "description": "Error information (required when status is ERROR)"
     }
   },
-  "required": ["name", "status"],
+  "required": ["call_id", "name", "status"],
   "additionalProperties": false,
   "oneOf": [
     {
@@ -2953,6 +3035,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Simple Result**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "name": "get_current_time",
   "status": "SUCCESS",
   "content": {
@@ -2966,6 +3049,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Complex Result**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "name": "get_weather_forecast",
   "status": "SUCCESS",
   "content": {
@@ -3008,6 +3092,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Array Result**
 ```json
 {
+  "call_id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
   "name": "list_user_accounts",
   "status": "SUCCESS",
   "content": [
@@ -3039,6 +3124,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Primitive Result**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d481",
   "name": "calculate_tax",
   "status": "SUCCESS",
   "content": 1247.50
@@ -3048,6 +3134,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Nested Object Result**
 ```json
 {
+  "call_id": "6ba7b811-9dad-11d1-80b4-00c04fd430c8",
   "name": "analyze_document",
   "status": "SUCCESS",
   "content": {
@@ -3094,6 +3181,7 @@ The `ErrorObject` provides structured error information:
 **Successful Function Execution with Mixed Data Types**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "generate_report",
   "status": "SUCCESS",
   "content": {
@@ -3134,6 +3222,7 @@ The `ErrorObject` provides structured error information:
 **Error Response with Basic Information**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "name": "get_weather_forecast",
   "status": "ERROR",
   "error": {
@@ -3146,6 +3235,7 @@ The `ErrorObject` provides structured error information:
 **Error Response with Detailed Information**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "process_financial_data",
   "status": "ERROR",
   "error": {
@@ -3158,6 +3248,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for System Failures**
 ```json
 {
+  "call_id": "6ba7b812-9dad-11d1-80b4-00c04fd430c8",
   "name": "create_support_ticket",
   "status": "ERROR",
   "error": {
@@ -3170,6 +3261,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for Permission Issues**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d480",
   "name": "delete_user_account",
   "status": "ERROR",
   "error": {
@@ -3182,6 +3274,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for Missing Resources**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d481",
   "name": "get_user_profile",
   "status": "ERROR",
   "error": {
@@ -3194,6 +3287,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for Rate Limiting**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d480",
   "name": "send_email",
   "status": "ERROR",
   "error": {
@@ -3206,6 +3300,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for Configuration Issues**
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d482",
   "name": "backup_database",
   "status": "ERROR",
   "error": {
@@ -3218,6 +3313,7 @@ The `ErrorObject` provides structured error information:
 **Error Response for Invalid State**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440001",
   "name": "cancel_order",
   "status": "ERROR",
   "error": {
@@ -3230,6 +3326,7 @@ The `ErrorObject` provides structured error information:
 **Successful Complex Analytics Result**
 ```json
 {
+  "call_id": "550e8400-e29b-41d4-a716-446655440003",
   "name": "analyze_business_metrics",
   "status": "SUCCESS",
   "content": {
@@ -3581,17 +3678,28 @@ The following standardized error types are recommended for consistent error hand
 
 The ToolResult discriminated union design provides:
 
-1. **Type Safety:** Clear distinction between success and error cases prevents parsing ambiguity
-2. **Consistency:** Unified structure for all function responses simplifies handling logic
-3. **Extensibility:** Error types can be standardized and extended without breaking changes
-4. **Debugging:** Function name correlation enables tracing in complex execution scenarios
-5. **AI-Friendly:** Structured errors provide clear feedback for AI model learning and adaptation
+1. **Traceability:** Unique call_id enables end-to-end correlation between FunctionCall requests and ToolResult responses
+2. **Type Safety:** Clear distinction between success and error cases prevents parsing ambiguity
+3. **Consistency:** Unified structure for all function responses simplifies handling logic
+4. **Extensibility:** Error types can be standardized and extended without breaking changes
+5. **Debugging:** Function name and call_id correlation enables tracing in complex execution scenarios
+6. **Idempotency:** Call_id correlation supports safe retry mechanisms and duplicate detection
+7. **AI-Friendly:** Structured errors provide clear feedback for AI model learning and adaptation
 
 #### 4.5.11. Implementation Notes
 
 **Discriminated Union Validation:**
 ```javascript
 function validateToolResult(result) {
+  // Validate call_id presence and format
+  if (!result.call_id || typeof result.call_id !== 'string') {
+    throw new Error('call_id is required and must be a non-empty string');
+  }
+  
+  if (result.call_id.length > 128) {
+    throw new Error('call_id must not exceed 128 characters');
+  }
+  
   if (result.status === 'SUCCESS') {
     if (!('content' in result)) {
       throw new Error('SUCCESS status requires content field');
@@ -3647,6 +3755,326 @@ function handleToolResult(result) {
 - Include function name for correlation in batch processing scenarios
 - Consider implementing retry logic based on error types
 - Log both successful and failed function executions for monitoring
+
+### 4.6. ToolManifest Structure
+
+The `ToolManifest` structure provides a concrete, serializable format for the Host-centric security model, serving as a trusted registry of tool contracts that can be validated, audited, and enforced by GRID Hosts. This structure enables enterprise-grade governance by providing a single source of truth for approved tool capabilities.
+
+#### 4.6.1. Structure Definition
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `manifest_version` | `String` | Yes | Semantic version of the manifest schema itself |
+| `contracts` | `ToolContract[]` | Yes | Array of ToolContract objects trusted by the Host |
+| `global_metadata` | `Map<String, String>` | No | Manifest-level metadata for governance and identification |
+
+#### 4.6.2. Field Specifications
+
+**manifest_version**
+- **Type:** String
+- **Required:** Yes
+- **Purpose:** Identifies the version of the ToolManifest schema format being used
+- **Constraints:**
+  - Must follow semantic versioning format (e.g., "1.0.0", "2.1.3")
+  - Must be a non-empty string
+  - Should correspond to a published ToolManifest schema version
+- **Usage:** Enables schema evolution and backward compatibility validation
+- **Best Practices:** Always use the latest stable manifest version for new deployments
+
+**contracts**
+- **Type:** Array of `ToolContract` objects
+- **Required:** Yes
+- **Purpose:** Defines the complete set of tool contracts trusted and approved by the Host
+- **Constraints:**
+  - Must contain at least one ToolContract object
+  - All contract names within the array must be unique
+  - Each element must be a valid ToolContract object as defined in the GRID protocol specification
+- **Usage:** Provides the authoritative list of tools that can be executed in the Host environment
+- **Security:** Only tools listed in this manifest can be invoked, enforcing the Host-centric security model
+
+**global_metadata**
+- **Type:** Map<String, String>
+- **Required:** No
+- **Purpose:** Provides manifest-level metadata for governance, identification, and operational context
+- **Constraints:**
+  - Keys must be non-empty strings
+  - Values must be strings (can be empty)
+  - Recommended keys include: "owner", "environment", "description", "created_by", "approved_by"
+- **Usage:** Supports enterprise governance workflows, audit trails, and operational visibility
+- **Best Practices:** Include organizational metadata to support compliance and governance requirements
+
+#### 4.6.3. Design Rationale
+
+The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric security model, providing several critical capabilities:
+
+**Security and Trust:** By requiring all executable tools to be explicitly declared in a signed manifest, the Host can enforce strict security boundaries. Only pre-approved, validated tool contracts can be executed, preventing unauthorized or malicious tool invocation.
+
+**Auditability and Compliance:** The manifest provides a complete audit trail of approved capabilities, supporting enterprise compliance requirements. Every tool execution can be traced back to an approved contract in the manifest.
+
+**Governance and Change Control:** Organizations can implement formal approval processes for tool manifests, ensuring that all AI capabilities undergo proper review and authorization before deployment to production environments.
+
+**Operational Visibility:** The manifest serves as documentation of system capabilities, enabling operators and security teams to understand exactly what tools are available in each environment.
+
+**Version Management:** By versioning manifests, organizations can implement controlled rollouts of new capabilities and maintain different tool sets across environments (development, staging, production).
+
+#### 4.6.4. JSON Schema Representation
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the manifest schema itself"
+    },
+    "contracts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ToolContract"
+      },
+      "minItems": 1,
+      "description": "Array of ToolContract objects trusted by the Host"
+    },
+    "global_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Manifest-level metadata for governance and identification"
+    }
+  },
+  "required": ["manifest_version", "contracts"],
+  "additionalProperties": false
+}
+```
+
+#### 4.6.5. Examples
+
+**Enterprise Production Manifest**
+```json
+{
+  "manifest_version": "1.0.0",
+  "contracts": [
+    {
+      "name": "financial_data_processor",
+      "version": "2.1.0",
+      "description": "Processes financial transactions and generates compliance reports",
+      "runtime_requirements": {
+        "language": "python",
+        "version": ">=3.9",
+        "memory_limit": "2GB",
+        "execution_timeout": 300
+      },
+      "security_profile": {
+        "isolation_level": "high",
+        "network_access": "restricted",
+        "file_system_access": "read_only",
+        "required_permissions": ["financial_data_read", "report_generation"]
+      },
+      "function_declarations": [
+        {
+          "name": "process_transactions",
+          "description": "Validates and processes a batch of financial transactions",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "transactions": {
+                "type": "ARRAY",
+                "items": {
+                  "type": "OBJECT",
+                  "properties": {
+                    "transaction_id": { "type": "STRING" },
+                    "amount": { "type": "NUMBER" },
+                    "currency": { "type": "STRING" },
+                    "account_from": { "type": "STRING" },
+                    "account_to": { "type": "STRING" },
+                    "timestamp": { "type": "STRING" }
+                  },
+                  "required": ["transaction_id", "amount", "currency", "account_from", "account_to"]
+                }
+              },
+              "validation_rules": {
+                "type": "OBJECT",
+                "properties": {
+                  "max_amount": { "type": "NUMBER" },
+                  "allowed_currencies": {
+                    "type": "ARRAY",
+                    "items": { "type": "STRING" }
+                  },
+                  "require_approval_above": { "type": "NUMBER" }
+                }
+              }
+            },
+            "required": ["transactions"]
+          }
+        },
+        {
+          "name": "generate_compliance_report",
+          "description": "Generates regulatory compliance reports for processed transactions",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "report_type": {
+                "type": "STRING",
+                "enum": ["daily_summary", "monthly_detailed", "audit_trail", "suspicious_activity"]
+              },
+              "date_range": {
+                "type": "OBJECT",
+                "properties": {
+                  "start_date": { "type": "STRING" },
+                  "end_date": { "type": "STRING" }
+                },
+                "required": ["start_date", "end_date"]
+              },
+              "include_attachments": { "type": "BOOLEAN" }
+            },
+            "required": ["report_type", "date_range"]
+          }
+        }
+      ]
+    },
+    {
+      "name": "customer_service_assistant",
+      "version": "1.3.2",
+      "description": "AI-powered customer service tools for ticket management and knowledge base queries",
+      "runtime_requirements": {
+        "language": "javascript",
+        "version": ">=18.0",
+        "memory_limit": "1GB",
+        "execution_timeout": 120
+      },
+      "security_profile": {
+        "isolation_level": "medium",
+        "network_access": "api_only",
+        "file_system_access": "none",
+        "required_permissions": ["customer_data_read", "ticket_management"]
+      },
+      "function_declarations": [
+        {
+          "name": "search_knowledge_base",
+          "description": "Searches the customer service knowledge base for relevant articles",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "query": { "type": "STRING" },
+              "category": {
+                "type": "STRING",
+                "enum": ["billing", "technical", "account", "product_info"]
+              },
+              "max_results": { "type": "INTEGER" }
+            },
+            "required": ["query"]
+          }
+        },
+        {
+          "name": "create_support_ticket",
+          "description": "Creates a new customer support ticket",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "customer_id": { "type": "STRING" },
+              "subject": { "type": "STRING" },
+              "description": { "type": "STRING" },
+              "priority": {
+                "type": "STRING",
+                "enum": ["low", "medium", "high", "urgent"]
+              },
+              "category": {
+                "type": "STRING",
+                "enum": ["billing", "technical", "account", "feature_request"]
+              }
+            },
+            "required": ["customer_id", "subject", "description", "priority", "category"]
+          }
+        }
+      ]
+    }
+  ],
+  "global_metadata": {
+    "owner": "platform-security-team",
+    "environment": "production",
+    "description": "Production-approved tool manifest for financial services platform",
+    "created_by": "security-admin@company.com",
+    "approved_by": "ciso@company.com",
+    "approval_date": "2025-02-01T10:00:00Z",
+    "next_review_date": "2025-05-01T10:00:00Z",
+    "compliance_framework": "SOX,PCI-DSS,GDPR",
+    "risk_assessment_id": "RA-2025-001"
+  }
+}
+```
+
+**Development Environment Manifest**
+```json
+{
+  "manifest_version": "1.0.0",
+  "contracts": [
+    {
+      "name": "development_utilities",
+      "version": "0.5.0-beta",
+      "description": "Development and testing utilities for local development",
+      "runtime_requirements": {
+        "language": "python",
+        "version": ">=3.8",
+        "memory_limit": "512MB",
+        "execution_timeout": 60
+      },
+      "security_profile": {
+        "isolation_level": "low",
+        "network_access": "unrestricted",
+        "file_system_access": "read_write",
+        "required_permissions": ["dev_tools"]
+      },
+      "function_declarations": [
+        {
+          "name": "mock_api_response",
+          "description": "Generates mock API responses for testing purposes",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "endpoint": { "type": "STRING" },
+              "method": {
+                "type": "STRING",
+                "enum": ["GET", "POST", "PUT", "DELETE"]
+              },
+              "response_template": { "type": "OBJECT" },
+              "status_code": { "type": "INTEGER" }
+            },
+            "required": ["endpoint", "method"]
+          }
+        },
+        {
+          "name": "generate_test_data",
+          "description": "Generates synthetic test data for development and testing",
+          "parameters": {
+            "type": "OBJECT",
+            "properties": {
+              "data_type": {
+                "type": "STRING",
+                "enum": ["users", "transactions", "products", "orders"]
+              },
+              "count": { "type": "INTEGER" },
+              "format": {
+                "type": "STRING",
+                "enum": ["json", "csv", "xml"]
+              }
+            },
+            "required": ["data_type", "count"]
+          }
+        }
+      ]
+    }
+  ],
+  "global_metadata": {
+    "owner": "development-team",
+    "environment": "development",
+    "description": "Development tools manifest for local testing and prototyping",
+    "created_by": "dev-lead@company.com",
+    "last_updated": "2025-02-08T14:30:00Z"
+  }
+}
+```
 
 ## 5. Protocol Versioning and Evolution
 
@@ -3797,6 +4225,7 @@ The discriminated union pattern supports additional result types:
 
 ```json
 {
+  "call_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
   "name": "function_name",
   "status": "PARTIAL",    // Future: Partial success status
   "status": "STREAMING",  // Future: Streaming response support

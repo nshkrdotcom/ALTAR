@@ -291,7 +291,167 @@ While a DIY approach offers maximum flexibility, it also carries significant hid
 
 -   **Faster Time-to-Market:** By leveraging the seamless "promotion path" from LATER, developers can move from a local prototype to a production-scale deployment with a simple configuration change. This agility allows businesses to iterate faster and deliver value from their AI investments sooner.
 
-## 7. Compliance Levels
+## 7. Advanced Interaction Patterns (Cookbook)
+
+This section provides concrete implementation guidance for complex real-world scenarios that leverage GRID's core primitives. These patterns demonstrate how to solve sophisticated distributed tool orchestration challenges while maintaining the security and observability advantages of the Host-centric model.
+
+The patterns documented here are designed to help implementers understand how to compose GRID's foundational capabilities—Host-managed contracts, secure message routing, and polyglot Runtime orchestration—into solutions for enterprise-grade use cases that go beyond simple request-response tool invocations.
+
+### 7.1. Bidirectional Tool Calls (Runtime-as-Client)
+
+In sophisticated tool orchestration scenarios, a Runtime executing one tool may need to invoke another tool to complete its work. For example, a Python Runtime executing a `generate_report` tool might need to call a `fetch_data` tool fulfilled by an Elixir Runtime to gather the necessary information.
+
+The **Runtime-as-Client** pattern enables this capability while preserving GRID's Host-centric security model. Rather than allowing direct Runtime-to-Runtime communication (which would bypass security controls), all tool invocations flow through the Host, ensuring complete observability, authorization, and audit logging.
+
+#### Host-Mediated Flow
+
+The following sequence diagram illustrates how bidirectional tool calls work within GRID's security model:
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant H as Host
+    participant PY as Python Runtime
+    participant EX as Elixir Runtime
+
+    C->>H: ToolCall(generate_report)
+    activate H
+    H->>H: Validate & authorize call
+    H->>PY: ToolCall(generate_report)
+    deactivate H
+    activate PY
+    
+    Note over PY: Runtime needs data to generate report
+    
+    PY->>H: ToolCall(fetch_data)
+    deactivate PY
+    activate H
+    H->>H: Validate & authorize nested call
+    H->>EX: ToolCall(fetch_data)
+    deactivate H
+    activate EX
+    EX->>EX: Execute data fetch
+    EX->>H: ToolResult(data)
+    deactivate EX
+    activate H
+    H->>PY: ToolResult(data)
+    deactivate H
+    activate PY
+    
+    PY->>PY: Generate report using fetched data
+    PY->>H: ToolResult(report)
+    deactivate PY
+    activate H
+    H->>C: ToolResult(report)
+    deactivate H
+```
+
+#### Security and Observability Advantages
+
+The Host-mediated approach provides several critical advantages over direct Runtime-to-Runtime communication:
+
+**Complete Security Control:** Every tool invocation, regardless of its origin (Client or Runtime), passes through the Host's authorization and validation layer. This ensures that even nested tool calls are subject to the same security policies, preventing privilege escalation or unauthorized access.
+
+**End-to-End Observability:** All tool interactions are visible to the Host, enabling comprehensive audit logging, performance monitoring, and debugging capabilities. Direct Runtime-to-Runtime calls would create "dark" interactions invisible to the central control plane.
+
+**Consistent Contract Enforcement:** The Host validates all tool calls against its trusted contract manifest, ensuring that even Runtime-initiated calls conform to the expected schemas and security constraints. This prevents malicious or compromised Runtimes from bypassing validation by calling tools directly.
+
+**Simplified Network Architecture:** By maintaining the hub-and-spoke communication model, GRID avoids the complexity of mesh networking between Runtimes, reducing attack surface and simplifying firewall rules and network security policies.
+
+This pattern enables sophisticated tool composition while maintaining the enterprise-grade security and governance guarantees that are fundamental to GRID's value proposition.
+
+### 7.2. Implementing Stateful Services as Tools
+
+Traditional stateful services—such as session managers, configuration stores, or workflow engines—can be seamlessly integrated into the ALTAR ecosystem by exposing their functionality through formal tool contracts. This pattern transforms stateful logic into securable, auditable runtimes that fulfill Host-managed contracts, bringing enterprise-grade governance to services that would otherwise operate outside the ALTAR security model.
+
+By implementing stateful services as tools, organizations gain centralized control over state management operations, comprehensive audit trails of all state modifications, and the ability to apply consistent security policies across both stateless and stateful components of their AI agent infrastructure.
+
+#### Conceptual Implementation Approach
+
+Stateful services should expose their core operations through well-defined ADM FunctionDeclaration contracts. The service's internal state management remains encapsulated within the Runtime, while the ALTAR ecosystem interacts with the service exclusively through validated, Host-authorized tool calls.
+
+Consider a simple variable storage service that maintains key-value pairs across multiple agent sessions. Rather than providing direct database access or REST endpoints, this service would expose its functionality through formal tool contracts:
+
+**Variable Retrieval Tool Contract:**
+
+```json
+{
+  "name": "get_variable",
+  "description": "Retrieves the current value of a named variable from the stateful storage service",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "variable_name": {
+        "type": "string",
+        "description": "The unique identifier for the variable to retrieve",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "scope": {
+        "type": "string",
+        "enum": ["session", "user", "global"],
+        "description": "The scope within which to look for the variable",
+        "default": "session"
+      },
+      "default_value": {
+        "type": "string",
+        "description": "Optional default value to return if the variable does not exist"
+      }
+    },
+    "required": ["variable_name"]
+  }
+}
+```
+
+**Variable Storage Tool Contract:**
+
+```json
+{
+  "name": "set_variable",
+  "description": "Stores or updates the value of a named variable in the stateful storage service",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "variable_name": {
+        "type": "string",
+        "description": "The unique identifier for the variable to store or update",
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "value": {
+        "type": "string",
+        "description": "The value to store for this variable"
+      },
+      "scope": {
+        "type": "string",
+        "enum": ["session", "user", "global"],
+        "description": "The scope within which to store the variable",
+        "default": "session"
+      },
+      "ttl_seconds": {
+        "type": "integer",
+        "description": "Optional time-to-live in seconds after which the variable should expire",
+        "minimum": 1
+      }
+    },
+    "required": ["variable_name", "value"]
+  }
+}
+```
+
+#### Security and Governance Benefits
+
+When stateful services are implemented as ALTAR tools, they automatically inherit the full security and governance capabilities of the GRID protocol:
+
+**Centralized Authorization:** All state access operations flow through the Host's authorization layer, enabling fine-grained access control policies. For example, an organization can enforce that only specific agent roles can modify global variables, while session-scoped variables remain accessible only within their originating session context.
+
+**Complete Audit Trail:** Every state modification becomes a logged, traceable tool invocation with full context about the requesting agent, session, and security principal. This provides unprecedented visibility into how AI agents interact with persistent state, supporting compliance requirements and debugging complex multi-agent workflows.
+
+**Contract-Based Validation:** The Host validates all state operations against trusted schemas before execution, preventing malformed requests from corrupting the service's internal state. This validation layer acts as a robust API gateway specifically designed for AI agent interactions.
+
+**Runtime Isolation:** The stateful service operates as an independent Runtime, allowing it to be scaled, monitored, and maintained separately from other system components. This isolation prevents state management concerns from affecting the performance or reliability of other tools in the ecosystem.
+
+By adopting this pattern, organizations can maintain the benefits of stateful services—persistence, consistency, and complex business logic—while ensuring these services operate within ALTAR's enterprise-grade security and governance framework. The result is a unified approach to both stateless and stateful tool management that scales from simple variable storage to sophisticated workflow orchestration systems.
+
+## 8. Compliance Levels
 
 To facilitate interoperability and gradual adoption, GRID defines several compliance levels.
 

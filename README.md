@@ -63,7 +63,7 @@ graph TD
         end
         
         subgraph "2 - Deploy to Production"
-            GRID["**GRID Protocol**<br/><i>The Secure Backend</i><br/>Run tools on a distributed, secure, and<br/>governed production runtime."]
+            GRID["**GRID Protocol**<br/><i>The Secure Backend with Host-Centric Security Model</i><br/>Run tools on a distributed runtime with<br/>enterprise-grade safety and governance."]
         end
 
         subgraph "Underpinned By"
@@ -82,7 +82,7 @@ graph TD
 
 1.  **[LATER Protocol](priv/docs/specs/02-later-protocol/later-protocol.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
 
-2.  **[GRID Protocol](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: **The Secure Production Backend.** GRID provides the managed, secure fulfillment layer for your tools. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
+2.  **[GRID Protocol](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: **The Secure Production Backend with Host-Centric Security Model.** GRID provides the managed, secure fulfillment layer for your tools with enterprise-grade safety and governance. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
 
 3.  **[ALTAR Data Model (ADM)](priv/docs/specs/01-data-model/data-model.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
 
