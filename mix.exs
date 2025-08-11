@@ -106,7 +106,7 @@ defmodule Altar.MixProject do
           filename: "grid-arch",
           title: "GRID Architecture"
         ],
-        "priv/docs/specs/03-grid/aesp.md": [
+        "priv/docs/specs/03-grid-arch/aesp.md": [
           filename: "grid-aesp",
           title: "GRID Enterprise Security Profile (AESP)"
         ],

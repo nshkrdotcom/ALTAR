@@ -3951,7 +3951,7 @@ The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric sec
   }
 }
 ```
-> **Note on Progressive Enhancement:** This example demonstrates a manifest with universal tool contracts. For a comprehensive example showing an enterprise-grade manifest enriched with advanced security, governance, and compliance metadata (such as `runtime_requirements`, `security_profile`, and `approval_status`), please refer to the **AESP (ALTAR Enterprise Security Profile)** specification in `priv/docs/specs/03-grid-protocol/aesp.md`.
+> **Note on Progressive Enhancement:** This example demonstrates a manifest with universal tool contracts. For a comprehensive example showing an enterprise-grade manifest enriched with advanced security, governance, and compliance metadata (such as `runtime_requirements`, `security_profile`, and `approval_status`), please refer to the **AESP (ALTAR Enterprise Security Profile)** specification in `priv/docs/specs/03-grid-arch/aesp.md`.
 
 **Development Environment Manifest**
 ```json
