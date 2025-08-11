@@ -80,9 +80,9 @@ graph TD
     style ADM fill:#4338ca,stroke:#3730a3,color:#ffffff
 ```
 
-1.  **[LATER Protocol](priv/docs/specs/02-later-protocol/later-protocol.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
+1.  **[LATER Implmentation Pattern](priv/docs/specs/02-later-impl/later-impl.md)**: **The Frictionless On-Ramp.** LATER provides a best-in-class developer experience for building and testing tools locally. With built-in adapters for popular frameworks, you can use your existing tools without a rewrite.
 
-2.  **[GRID Protocol](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: **The Secure Production Backend with Host-Centric Security Model.** GRID provides the managed, secure fulfillment layer for your tools with enterprise-grade safety and governance. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
+2.  **[GRID Architecture](priv/docs/specs/03-grid-arch/grid-arch.md)**: **The Secure Production Backend with Host-Centric Security Model.** GRID provides the managed, secure fulfillment layer for your tools with enterprise-grade safety and governance. It solves the hard problems of distributed systems—security, governance, and scalability—out of the box.
 
 3.  **[ALTAR Data Model (ADM)](priv/docs/specs/01-data-model/data-model.md)**: **The Universal Contract.** By adopting and standardizing industry patterns, the ADM ensures a tool defined once can be understood and executed by both the LATER and GRID protocols, making the promotion path seamless.
 
@@ -97,7 +97,7 @@ Add `altar` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:altar, "~> 0.1.6"}
+    {:altar, "~> 0.1.7"}
   ]
 end
 ```
@@ -164,9 +164,9 @@ Simulate an LLM's request by creating a `FunctionCall` and passing it to the Exe
 
 ## Project Status & Roadmap
 
-This monorepo contains both the protocol specifications and the canonical Elixir implementation.
+This monorepo contains both the specifications and the canonical Elixir implementation.
 
-*   ✅ **Protocol Specifications (v1.0):** The specs for `ADM`, `LATER`, and `GRID` are complete and can be found in the `/specs` directory. They represent a stable vision.
+*   ✅ **Specifications (v1.0):** The specs for `ADM`, `LATER`, and `GRID` are complete and can be found in the `/specs` directory. They represent a stable vision.
 
 *   ✅ **Elixir Implementation (`/lib`):**
     *   `Altar.ADM`: Complete and fully tested.
@@ -175,14 +175,14 @@ This monorepo contains both the protocol specifications and the canonical Elixir
 
 *   ⏳ **Reference Runtimes (`/runtimes`):** Reference implementations for other languages (Python, TypeScript) are planned and will reside in this repository.
 
-## Protocol Specifications
+## Specifications
 
-The complete protocol specifications can be found in the `specs/` directory. They have been updated to reflect the platform's focus on productivity and interoperability.
+The complete specifications can be found in the `specs/` directory. They have been updated to reflect the platform's focus on productivity and interoperability.
 
 *   **[01-data-model/data-model.md](priv/docs/specs/01-data-model/data-model.md)**: The core ALTAR Data Model (ADM).
-*   **[02-later-protocol/later-protocol.md](priv/docs/specs/02-later-protocol/later-protocol.md)**: The LATER protocol for local execution.
-*   **[03-grid-protocol/grid-protocol.md](priv/docs/specs/03-grid-protocol/grid-protocol.md)**: The GRID protocol for distributed execution.
-    *   **[aesp.md](priv/docs/specs/03-grid-protocol/aesp.md)**: The Enterprise Security Profile for GRID.
+*   **[02-later-impl/later-impl.md](priv/docs/specs/02-later-impl/later-impl.md)**: The LATER implementation pattern for local execution.
+*   **[03-grid-arch/grid-arch.md](priv/docs/specs/03-grid-arch/grid-arch.md)**: The GRID architecture for distributed execution.
+    *   **[aesp.md](priv/docs/specs/03-grid-arch/aesp.md)**: The Enterprise Security Profile for GRID.
 
 ## License
 

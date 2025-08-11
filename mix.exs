@@ -1,7 +1,7 @@
 defmodule Altar.MixProject do
   use Mix.Project
 
-  @version "0.1.6"
+  @version "0.1.7"
   @source_url "https://github.com/nshkrdotcom/ALTAR"
 
   def project do
@@ -70,7 +70,7 @@ defmodule Altar.MixProject do
   end
 
   defp description do
-    "Altar provides a robust, type-safe foundation for building AI agent tools in Elixir. It offers a clean protocol to define and execute tools locally, with a clear promotion path to future distributed systems."
+    "Altar provides a robust, type-safe foundation for building AI agent tools in Elixir. It offers a clean contract to define and execute tools locally, with a clear promotion path to future distributed systems."
   end
 
   defp package do
@@ -98,22 +98,22 @@ defmodule Altar.MixProject do
           filename: "adm-data-model",
           title: "ADM Data Model"
         ],
-        "priv/docs/specs/02-later-protocol/later-protocol.md": [
-          filename: "later-protocol",
-          title: "LATER Protocol"
+        "priv/docs/specs/02-later-impl/later-impl.md": [
+          filename: "later-impl",
+          title: "LATER Implmentation Pattern"
         ],
-        "priv/docs/specs/03-grid-protocol/grid-protocol.md": [
-          filename: "grid-protocol",
-          title: "GRID Protocol"
+        "priv/docs/specs/03-grid-arch/grid-arch.md": [
+          filename: "grid-arch",
+          title: "GRID Architecture"
         ],
-        "priv/docs/specs/03-grid-protocol/aesp.md": [
+        "priv/docs/specs/03-grid/aesp.md": [
           filename: "grid-aesp",
           title: "GRID Enterprise Security Profile (AESP)"
         ],
         "CHANGELOG.md": [filename: "changelog", title: "Release Notes"]
       ],
       groups_for_modules: [
-        "Core Protocol": [
+        Core: [
           Altar,
           Altar.Supervisor
         ],
@@ -130,7 +130,7 @@ defmodule Altar.MixProject do
         ]
       ],
       skip_undefined_reference_warnings_on: [
-        "priv/docs/specs/02-later-protocol/later-protocol.md"
+        "priv/docs/specs/02-later-impl/later-impl.md"
       ],
       before_closing_head_tag: &mermaid_script/1,
       source_ref: "v#{@version}",

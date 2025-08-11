@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2025-08-10
+- Updated file names and refs.
+
 ## [0.1.6] - 2025-08-10
 - Update GRID specification.
 
