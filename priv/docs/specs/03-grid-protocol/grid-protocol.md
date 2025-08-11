@@ -1,4 +1,4 @@
-# GRID Protocol Specification v1.0
+# GRID (Global Runtime & Interop Director) v1.0: A Reference Architecture for Distributed Tool Execution
 
 **Version:** 1.0.0
 **Status:** Final
@@ -8,7 +8,7 @@
 
 ### 1.1. Vision & Guiding Principles
 
-The **GRID (Global Runtime & Interop Director) Protocol** is the secure, scalable execution backend for the ALTAR ecosystem. It provides the **production-grade fulfillment layer** for tools developed and tested with the LATER protocol, solving the critical security, governance, and operational challenges that are not addressed by open-source development frameworks.
+The **GRID (Global Runtime & Interop Director) Architecture** is a blueprint for a secure, scalable, and distributed backend for the ALTAR ecosystem. It describes the necessary components (Host, Runtime), their interactions, and the security model required for production-grade tool fulfillment.
 
 GRID is built on two core principles:
 
@@ -17,16 +17,16 @@ GRID is built on two core principles:
 
 ### 1.2. Relationship to ADM & LATER
 
-GRID is the third layer of the three-layer ALTAR architecture, building upon the foundational contracts established by the ALTAR Data Model (ADM) and complementing the local execution model of the LATER protocol.
+GRID is the third layer of the three-layer ALTAR architecture, building upon the foundational contracts established by the ALTAR Data Model (ADM) and complementing the local execution model of the LATER implementation pattern.
 
 ```mermaid
 graph TB
-    subgraph L3["Layer&nbsp;3:&nbsp;GRID&nbsp;Protocol&nbsp;(This&nbsp;Specification)"]
+    subgraph L3["Layer&nbsp;3:&nbsp;GRID&nbsp;Architecture&nbsp;(This&nbsp;Blueprint)"]
         direction TB
         A["<strong>Distributed Tool Orchestration</strong><br/>Host-Runtime Communication<br/>Enterprise Security & Observability"]
     end
 
-    subgraph L2["Layer&nbsp;2:&nbsp;LATER&nbsp;Protocol"]
+    subgraph L2["Layer&nbsp;2:&nbsp;LATER&nbsp;Pattern"]
         direction TB
         B["<strong>Local Tool Execution</strong><br/>In-Process Function Calls<br/>Development & Prototyping"]
     end
@@ -44,12 +44,12 @@ graph TB
     style L1 fill:#0d47a1,stroke:#002171,color:#ffffff
 ```
 
--   **Imports the ADM:** GRID is a consumer of the **ALTAR Data Model (ADM)**. All data payloads within GRID messages, such as function calls and results, **must** conform to the structures defined in the ADM specification (`FunctionCall`, `ToolResult`, etc.). GRID defines the messages that *transport* these ADM structures between processes.
--   **Distributed Counterpart to LATER:** Where the LATER protocol specifies in-process tool execution for development, GRID specifies out-of-process, distributed tool execution for scalable, production-ready systems.
+-   **Imports the ADM:** GRID is a consumer of the **ALTAR Data Model (ADM)**. All data payloads within GRID messages, such as function calls and results, **must** conform to the structures defined in the ADM specification (`FunctionCall`, `ToolResult`, etc.). This architecture defines the messages that *transport* these ADM structures between processes.
+-   **Distributed Counterpart to LATER:** Where the LATER pattern specifies in-process tool execution for development, this blueprint specifies out-of-process, distributed tool execution for scalable, production-ready systems.
 
 ## 2. Architecture: The Host-Runtime Model
 
-The GRID protocol is based on a Host-Runtime architecture, where a central Host orchestrates communication between clients and one or more Runtimes.
+The GRID architecture is based on a Host-Runtime model, where a central Host orchestrates communication between clients and one or more Runtimes.
 
 ```mermaid
 graph LR
@@ -284,15 +284,17 @@ This dual-mode approach enables organizations to maintain strict security contro
 
 > **Note on the `ToolContract` Definition**
 >
-> To maintain a clean separation of concerns, the definition of a `ToolContract` is layered across the ALTAR protocol suite:
+> To maintain a clean separation of concerns, the definition of a `ToolContract` is layered across the ALTAR specification suite:
 >
 > 1.  **Structural Core (ADM):** The foundational **ALTAR Data Model (ADM)** defines the `FunctionDeclaration`, which is the universal, language-agnostic structural core of any tool's contract.
-> 2.  **Conceptual Formalization (GRID):** The **GRID Protocol** (this document) formalizes the *concept* of a `ToolContract` as the trusted, Host-managed agreement that contains one or more `FunctionDeclaration`s. This is the level at which security and fulfillment policies are applied.
+> 2.  **Conceptual Formalization (GRID):** The **GRID Architecture** (this document) formalizes the *concept* of a `ToolContract` as the trusted, Host-managed agreement that contains one or more `FunctionDeclaration`s. This is the level at which security and fulfillment policies are applied.
 > 3.  **Enterprise Enrichment (AESP):** The **AESP (ALTAR Enterprise Security Profile)** further enriches this concept into a specific `EnterpriseToolContract` message, adding detailed fields for governance, compliance, and risk management.
 >
 > This layered approach allows the core tool definition to remain simple and universal while being progressively enhanced with the security and governance features required for more advanced, production-grade deployments.
 
-## 4. Protocol Message Schemas (Language-Neutral IDL)
+## 4. Conceptual API Contracts and Message Schemas
+
+> **Disclaimer:** The schemas defined below represent the **conceptual contracts** between the components in the GRID architecture. They are presented in a language-neutral IDL format. A concrete implementation of this architecture would realize these contracts using a specific wire protocol like gRPC (defining services in a `.proto` file) or a REST/HTTP API. The choice of wire protocol is an implementation detail of the GRID architecture.
 
 These schemas define the messages exchanged between the Host and Runtimes. All payloads referencing tool structures (e.g., `FunctionCall`, `ToolResult`) are defined by the **ALTAR Data Model (ADM) Specification**.
 
