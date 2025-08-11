@@ -1,4 +1,4 @@
-# ALTAR Data Model (ADM) Specification v1.0
+# ALTAR Data Model (ADM) v1.0: A Universal Contract for AI Tools
 
 **Version:** 1.0.0  
 **Status:** Final  
@@ -8,14 +8,7 @@
 
 ### 1.1. Purpose and Scope
 
-The ALTAR Data Model (ADM) v1.0 specification **adopts and standardizes** a set of data structures based on established industry patterns (notably Google Gemini's function calling API and OpenAPI 3.0) to serve as a universal, interoperable contract. Its primary purpose is to ensure that a tool defined for one execution environment (e.g., local development) can be **seamlessly promoted** to another (e.g., a secure, distributed production environment) without modification.
-
-By aligning with proven, real-world schemas, the ADM provides a reliable and language-agnostic foundation for:
-- Declaring tool capabilities and metadata
-- Defining function parameter schemas and validation rules
-- Structuring function call requests and responses
-- Handling errors and reporting status
-- Managing trusted tool manifests for Host-centric security models
+This document is a **Data Model Specification**. It defines a set of language-agnostic data structures and contracts (`FunctionDeclaration`, `FunctionCall`, etc.) that serve as the universal language for the ALTAR ecosystem. It does **not** define execution logic or communication protocols; it defines the payload they carry.
 
 ### 1.2. Three-Layer Architecture
 
@@ -25,14 +18,14 @@ The ALTAR ecosystem is built on a three-layer architecture, with the ADM serving
 graph TB
     %% --- Define Protocol Layers ---
     L3("
-        <strong>Layer 3: GRID Protocol</strong><br/><br/>
+        <strong>Layer 3: GRID Architecture</strong><br/><br/>
         Distributed Tool Orchestration<br/>
         Host-Runtime Communication & Enterprise<br/>
         Security & Observability
     ")
 
     L2("
-        <strong>Layer 2: LATER Protocol</strong><br/><br/>
+        <strong>Layer 2: LATER Pattern</strong><br/><br/>
         Local Tool Execution<br/>
         In-Process Function Calls<br/>
         Development & Prototyping
@@ -57,28 +50,13 @@ graph TB
 
 **Layer 1 - ALTAR Data Model (ADM):** Defines the universal data structures and contracts for AI tool interactions. This layer is purely structural and contains no execution or transport logic.
 
-**Layer 2 - LATER Protocol:** Implements local, in-process tool execution using ADM data structures. LATER provides the runtime environment for development and prototyping scenarios.
+**Layer 2 - LATER Pattern:** Implements local, in-process tool execution using ADM data structures. LATER provides the runtime environment for development and prototyping scenarios.
 
-**Layer 3 - GRID Protocol:** Implements distributed tool orchestration using ADM data structures. GRID provides enterprise-grade security, observability, and scalability for production deployments.
+**Layer 3 - GRID Architecture:** Implements distributed tool orchestration using ADM data structures. GRID provides enterprise-grade security, observability, and scalability for production deployments.
 
-### 1.3. Relationship to LATER and GRID Protocols
+### 1.3. Relationship to LATER and GRID
 
-The ADM serves as the foundational contract that both LATER and GRID protocols import and implement:
-
-**LATER Protocol Integration:**
-- LATER imports all ADM data structures for local tool execution
-- Tool definitions created using ADM structures work seamlessly in LATER environments
-- LATER provides the execution runtime while ADM provides the data contracts
-
-**GRID Protocol Integration:**
-- GRID imports all ADM data structures for distributed tool orchestration
-- Tools defined using ADM structures can be promoted from LATER to GRID without modification
-- GRID adds transport, security, and observability layers while preserving ADM contracts
-
-**Interoperability Benefits:**
-- Tools defined once using ADM structures work in both LATER and GRID environments
-- Migration between local and distributed execution requires no structural changes
-- Consistent data formats enable seamless ecosystem integration
+The ADM is the foundational layer that is **imported and used by** both the LATER implementation pattern and the GRID reference architecture. LATER provides a standard way to execute these contracts in-process, while GRID provides a blueprint for executing them in a distributed environment.
 
 ## 2. Serialization Format
 
@@ -163,7 +141,7 @@ The ADM is not a new invention, but a pragmatic **adoption and standardization**
 
 **1. Industry Compatibility (Primary Rationale):** The ADM's core value is its alignment with the existing AI and API ecosystem. By adopting patterns from Google's Gemini API and the OpenAPI 3.0 specification, the ADM ensures that ALTAR tools are immediately familiar and compatible with the technologies developers already use. This choice reduces the learning curve and enables seamless integration with a wide range of LLM clients, API gateways, and validation tools.
 
-**2. Structural Purity for Portability:** The specification strictly defines data structures, deliberately excluding execution logic, networking, or host-specific concerns. This separation is critical for the "promotion path" value proposition, as it guarantees that a tool's contract remains pure and portable between the `LATER` (local) and `GRID` (distributed) protocols.
+**2. Structural Purity for Portability:** The specification strictly defines data structures, deliberately excluding execution logic, networking, or host-specific concerns. This separation is critical for the "promotion path" value proposition, as it guarantees that a tool's contract remains pure and portable between the `LATER` (local) implementation pattern and `GRID` (distributed) architecture.
 
 **3. Language Neutrality via JSON:** By mandating JSON as the canonical serialization format, the ADM ensures that tools and hosts can be implemented in any programming language without compromising compatibility.
 
@@ -4046,7 +4024,7 @@ The ToolManifest structure serves as the cornerstone of ALTAR's Host-centric sec
 }
 ```
 
-## 5. Protocol Versioning and Evolution
+## 5. Versioning and Evolution
 
 ### 5.1. Versioning Strategy
 
@@ -4126,7 +4104,7 @@ The ADM uses semantic versioning (SemVer) with the format `MAJOR.MINOR.PATCH`:
 - Cross-version compatibility should be handled gracefully
 
 **Version Negotiation:**
-- Higher-layer protocols (LATER, GRID) may implement version negotiation
+- Higher-layer specifications (LATER, GRID) may implement version negotiation
 - Implementations should support the highest mutually compatible version
 - Fallback to lower versions should maintain functional compatibility
 
@@ -4222,8 +4200,8 @@ The following field names are reserved for future use across all data structures
 
 **Namespace Conventions:**
 - **Core ADM:** No prefix (current specification)
-- **LATER Protocol:** `later_*` prefix for LATER-specific extensions
-- **GRID Protocol:** `grid_*` prefix for GRID-specific extensions
+- **LATER Pattern:** `later_*` prefix for LATER-specific extensions
+- **GRID Architecture:** `grid_*` prefix for GRID-specific extensions
 - **Vendor Extensions:** `vendor_name_*` prefix for vendor-specific additions
 - **Experimental:** `x_*` prefix for experimental features
 
@@ -4305,15 +4283,22 @@ Implementations may add custom extensions following these guidelines:
 - Version compatibility should include extension compatibility
 - Fallback behavior should be defined for unsupported extensions
 
-**Cross-Protocol Compatibility:**
-- Extensions should consider LATER and GRID protocol needs
-- Protocol-specific extensions should not conflict with core ADM
-- Extension namespacing should prevent cross-protocol conflicts
+**Cross-Specification Compatibility:**
+- Extensions should consider LATER and GRID specification needs
+- Specification-specific extensions should not conflict with core ADM
+- Extension namespacing should prevent cross-specification conflicts
 - Shared extensions should be promoted to core ADM when appropriate
+
+### 5.3. Future Technical Refinement: Adopting JSON Schema
+
+> The v1.0 `parameters` object is a simple map representing an OpenAPI-like schema. While functional for an MVP, a key goal for a future revision (v1.1) is to replace this custom map with a standard **JSON Schema object**. Adopting the official JSON Schema standard will provide significant benefits:
+> - **Rich Validation:** Access to a full vocabulary of validation keywords (`pattern`, `minLength`, `maximum`, etc.), making tool definitions far more robust.
+> - **Industry Alignment:** Conformance with the exact standard used by major AI providers like Google and OpenAI.
+> - **Ecosystem Tooling:** The ability to leverage the vast ecosystem of JSON Schema validators, UI generators, and other tools in any language.
 
 ## 6. Conclusion
 
-The ALTAR Data Model (ADM) v1.0 specification provides a robust, language-agnostic foundation for defining and interacting with AI tools. By establishing a universal contract for data structures, the ADM ensures seamless interoperability across the ALTAR ecosystem, from local development with the LATER protocol to distributed production environments with the GRID protocol.
+The ALTAR Data Model (ADM) v1.0 specification provides a robust, language-agnostic foundation for defining and interacting with AI tools. By establishing a universal contract for data structures, the ADM ensures seamless interoperability across the ALTAR ecosystem, from local development with the LATER implementation pattern to distributed production environments with the GRID architecture.
 
 This document serves as the authoritative v1.0 reference for all ADM implementations. Adherence to this specification is essential for ensuring that tools are portable, compatible, and can evolve gracefully within the broader ALTAR architecture.
 

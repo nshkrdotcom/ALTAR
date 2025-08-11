@@ -1,4 +1,4 @@
-# LATER (Local Agent & Tool Execution Runtime) Protocol v1.0
+# LATER (Local Agent & Tool Execution Runtime) v1.0: A Standard Implementation Pattern
 
 **Version:** 1.0.0
 **Status:** Final
@@ -8,30 +8,30 @@
 
 ### 1.1. Vision & Guiding Principles
 
-The **LATER (Local Agent & Tool Execution Runtime) Protocol** provides a language-agnostic standard for local, in-process AI tool execution. It is designed to be the **frictionless on-ramp to production** for the ALTAR ecosystem. Its primary purpose is to enable developers to build and test tools locally that are *guaranteed* to be compatible with the secure, scalable **GRID** execution environment, ensuring a seamless transition from development to deployment.
+The **LATER (Local Agent & Tool Execution Runtime) Pattern** provides a language-agnostic standard for building libraries that handle local, in-process AI tool execution. It is designed to be the **frictionless on-ramp to production** for the ALTAR ecosystem. Its primary purpose is to enable developers to build and test tools locally that are *guaranteed* to be compatible with the secure, scalable **GRID** execution environment, ensuring a seamless transition from development to deployment.
 
 LATER is governed by three core principles:
 
 1.  **The Frictionless On-Ramp to Production:** Every feature in LATER is designed with the "promotion path" in mind. The developer experience is optimized to ensure that code written for local execution works identically when pointed at the distributed GRID backend, eliminating the need for costly and error-prone rewrites.
 2.  **Implements the ADM:** LATER is a consumer of the **ALTAR Data Model (ADM)**. All data structures it produces and consumes (`FunctionDeclaration`, `FunctionCall`, `ToolResult`, etc.) must conform to the ADM v1.0 specification. This shared contract is what makes the promotion path possible.
-3.  **Developer Experience & Introspection:** The protocol prioritizes a world-class developer experience. A compliant implementation must favor automated schema generation from native function signatures and documentation, minimizing boilerplate and manual configuration. It must also provide adapters for popular existing AI frameworks (see Section 2.4).
+3.  **Developer Experience & Introspection:** The implementation standard prioritizes a world-class developer experience. A compliant implementation must favor automated schema generation from native function signatures and documentation, minimizing boilerplate and manual configuration. It must also provide adapters for popular existing AI frameworks (see Section 2.4).
 
 ### 1.2. Relationship to ADM & GRID
 
-LATER is the second layer in the three-layer ALTAR architecture, positioned between the foundational data model and the distributed execution protocol.
+LATER is not a communication protocol but a **standard pattern for implementing a local runtime**. It consumes the ADM specification to define tool contracts and serves as the local development counterpart to the GRID distributed architecture blueprint.
 
 ```mermaid
 graph TB
     subgraph AE["ALTAR Ecosystem"]
         L3("
-            <strong>Layer 3: GRID Protocol</strong><br/><br/>
+            <strong>Layer 3: GRID Architecture</strong><br/><br/>
             Distributed Tool Orchestration<br/>
             Inter-Process & Network Communication<br/>
             Manages Security & Transport
         ")
 
         L2("
-            <strong>Layer 2: LATER Protocol (This Specification)</strong><br/><br/>
+            <strong>Layer 2: LATER Pattern (This Specification)</strong><br/><br/>
             Local Tool Execution Runtime<br/>
             In-Process Function Calls<br/>
             Automated Introspection
@@ -56,10 +56,7 @@ graph TB
     style L1 fill:#0d47a1,stroke:#002171,color:#ffffff
 ```
 
-*   **LATER implements the ADM:** It provides a standard for *creating* and *executing* tools that are described by ADM data structures.
-*   **LATER is the local companion to GRID:** Where GRID defines how tools operate across a network, LATER defines how they operate within a single process. This clear separation of concerns allows for a "promotion path" where a tool can graduate from a local LATER runtime to a distributed GRID runtime with no changes to its fundamental contract.
-
-## 2. Abstract Protocol Definition
+## 2. Abstract Implementation Definition
 
 A LATER-compliant implementation must provide the following conceptual components and behaviors. These definitions are language-agnostic; the subsequent section provides a canonical implementation pattern in Elixir.
 
@@ -344,7 +341,7 @@ This commitment to interoperability is central to LATER's mission. It ensures de
 
 ## 3. Canonical Implementation Pattern: Elixir
 
-This section provides a brief, non-normative example of how the abstract protocol can be idiomatically implemented in Elixir. This serves as a reference for implementers in other languages.
+This section provides a brief, non-normative example of how the abstract implementation standard can be idiomatically implemented in Elixir. This serves as a reference for implementers in other languages.
 
 #### 3.1. Tool Declaration with `deftool`
 
@@ -408,7 +405,7 @@ This section illustrates the complete end-to-end workflow, demonstrating the cor
 
 ### 4.1. The End-to-End LATER Flow
 
-The following diagram shows the sequence of events when a tool is executed locally using the LATER protocol.
+The following diagram shows the sequence of events when a tool is executed locally using the LATER pattern.
 
 ```mermaid
 sequenceDiagram

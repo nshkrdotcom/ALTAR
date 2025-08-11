@@ -1,4 +1,4 @@
-# AESP (ALTAR Enterprise Security Protocol) Profile v1.0
+# AESP (ALTAR Enterprise Security Profile) v1.0: Enterprise Controls for the GRID Architecture
 
 **Version:** 1.0
 **Status:** Final
@@ -9,16 +9,16 @@
 
 ### 1.1. Overview
 
-This document defines the **AESP (ALTAR Enterprise Security Protocol) Profile v1.0**. AESP is not a standalone protocol; it is a formal profile of the [GRID Protocol](./README.md) that specifies the mandatory architectural components, message extensions, and security controls required to achieve **Level 3 Enterprise Compliance**.
+This document defines the **AESP (ALTAR Enterprise Security Profile) v1.0**. AESP is a formal profile for the [GRID Architecture](./README.md) that specifies the mandatory architectural components, API contract extensions, and security controls required to achieve enterprise-grade compliance.
 
-The primary purpose of AESP is to elevate the core GRID protocol to meet the stringent demands of enterprise environments. Where GRID provides a robust foundation for distributed tool orchestration, AESP layers on the critical features of **security, governance, and compliance**. An AESP-compliant system is, by definition, a GRID-compliant system that has been hardened and extended for high-stakes, regulated deployments.
+The primary purpose of AESP is to elevate the core GRID architecture to meet the stringent demands of enterprise environments. Where GRID provides a robust foundation for distributed tool orchestration, AESP layers on the critical features of **security, governance, and compliance**. An AESP-compliant system is, by definition, a GRID-compliant system that has been hardened and extended for high-stakes, regulated deployments.
 
 ### 1.2. Relationship to GRID
 
-AESP extends the GRID protocol through three primary mechanisms, ensuring that an AESP-compliant Host remains interoperable with the core principles of GRID while enforcing stricter enterprise-grade controls.
+AESP extends the GRID architecture through three primary mechanisms, ensuring that an AESP-compliant Host remains interoperable with the core principles of GRID while enforcing stricter enterprise-grade controls.
 
 *   **Component Mandates:** AESP mandates the implementation of a specific **Control Plane** architecture. A standard GRID Host is extended with required services for identity, policy, audit, and more, which become integral to its operation.
-*   **Message Replacement:** AESP selectively replaces certain base GRID protocol messages with enterprise-specific counterparts. These extended messages (e.g., `EnterpriseSecurityContext`) are supersets of the base messages, carrying additional data required for fine-grained policy enforcement, auditability, and governance.
+*   **Message Replacement:** AESP selectively replaces certain base GRID API contracts with enterprise-specific counterparts. These extended messages (e.g., `EnterpriseSecurityContext`) are supersets of the base messages, carrying additional data required for fine-grained policy enforcement, auditability, and governance.
 *   **Stricter Security:** AESP elevates GRID's security posture from a recommendation to a requirement. It mandates specific security controls, such as mTLS 1.3+ for all transport, integration with enterprise identity providers (IdPs), and the maintenance of an immutable audit log.
 
 ### 1.3. Incremental Adoption: AESP Compliance Tiers
@@ -129,7 +129,7 @@ This mapping demonstrates that AESP is not a proprietary, black-box system but r
 
 ## 3. AESP Message Replacements and Extensions
 
-AESP achieves its enhanced capabilities by replacing key GRID protocol messages with extended enterprise versions. These messages are designed to be supersets of their base counterparts.
+AESP achieves its enhanced capabilities by replacing key GRID API contracts with extended enterprise versions. These messages are designed to be supersets of their base counterparts.
 
 ### 3.1. `EnterpriseSecurityContext`
 
@@ -250,8 +250,8 @@ AESP mandates a set of non-negotiable security controls to ensure a hardened, en
 AESP provides the final, most secure stage in the ALTAR tool lifecycle. The promotion path to a fully governed enterprise tool is as follows:
 
 1.  A tool is first defined using the standard **ALTAR Data Model (ADM)**.
-2.  It is tested and run locally using the **LATER** protocol.
-3.  It is deployed to a standard **GRID** environment for distributed execution.
+2.  It is tested and run locally using the **LATER** implementation pattern.
+3.  It is deployed to a standard **GRID** architecture for distributed execution.
 4.  Finally, for enterprise use, its definition is promoted to an **`EnterpriseToolContract`**. This enrichment process involves adding security classifications, risk assessments, and compliance tags. The contract is then submitted to the **`EnterpriseGovernanceService`** for formal review and approval.
 
 Once approved and active in the AESP Host's manifest, the tool is fully subject to the control plane's policies. Every call is authenticated, authorized by the RBAC and Policy Engines, and meticulously recorded by the Audit Manager, completing its journey to a fully governed enterprise asset.
