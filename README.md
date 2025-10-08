@@ -97,7 +97,7 @@ Add `altar` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:altar, "~> 0.1.7"}
+    {:altar, "~> 0.2.0"}
   ]
 end
 ```

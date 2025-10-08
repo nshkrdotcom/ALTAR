@@ -1,7 +1,7 @@
 defmodule Altar.MixProject do
   use Mix.Project
 
-  @version "0.1.7"
+  @version "0.2.0"
   @source_url "https://github.com/nshkrdotcom/ALTAR"
 
   def project do
