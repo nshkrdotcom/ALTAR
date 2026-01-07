@@ -1,7 +1,7 @@
 defmodule Altar.ADM.ToolTest do
   use ExUnit.Case, async: true
 
-  alias Altar.ADM.{Tool, FunctionDeclaration}
+  alias Altar.ADM.{FunctionDeclaration, Tool}
 
   doctest Tool
 

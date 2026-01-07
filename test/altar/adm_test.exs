@@ -2,7 +2,7 @@ defmodule Altar.ADMTest do
   use ExUnit.Case, async: true
 
   alias Altar.ADM
-  alias Altar.ADM.{FunctionCall, FunctionDeclaration, ToolResult, ToolConfig}
+  alias Altar.ADM.{FunctionCall, FunctionDeclaration, ToolConfig, ToolResult}
 
   describe "facade functions" do
     test "new_function_call/1 passes through success from FunctionCall.new/1" do

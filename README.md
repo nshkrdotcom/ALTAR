@@ -162,6 +162,11 @@ Simulate an LLM's request by creating a `FunctionCall` and passing it to the Exe
 # }
 ```
 
+### Example Script
+
+Run `examples/basic_tool.exs` for a runnable end-to-end example using the
+LATER registry and executor.
+
 ## Project Status & Roadmap
 
 This monorepo contains both the specifications and the canonical Elixir implementation.

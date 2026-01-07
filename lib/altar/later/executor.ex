@@ -41,11 +41,9 @@ defmodule Altar.LATER.Executor do
 
   @spec try_execute((map() -> any()), map()) :: {:ok, any()} | {:error, Exception.t(), list()}
   defp try_execute(fun, args) when is_function(fun, 1) and is_map(args) do
-    try do
-      {:ok, fun.(args)}
-    rescue
-      exception -> {:error, exception, __STACKTRACE__}
-    end
+    {:ok, fun.(args)}
+  rescue
+    exception -> {:error, exception, __STACKTRACE__}
   end
 
   @spec build_tool_result(String.t(), {:ok, any()} | {:error, Exception.t(), list()}) ::

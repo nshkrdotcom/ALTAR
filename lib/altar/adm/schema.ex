@@ -160,9 +160,8 @@ defmodule Altar.ADM.Schema do
   @spec validate(t(), any()) :: :ok | {:error, String.t()}
   def validate(%__MODULE__{type: :STRING} = schema, value) when is_binary(value) do
     with :ok <- validate_string_length(schema, value),
-         :ok <- validate_pattern(schema, value),
-         :ok <- validate_enum(schema, value) do
-      :ok
+         :ok <- validate_pattern(schema, value) do
+      validate_enum(schema, value)
     end
   end
 
@@ -170,9 +169,8 @@ defmodule Altar.ADM.Schema do
     do: {:error, "expected STRING, got #{inspect(value)}"}
 
   def validate(%__MODULE__{type: :INTEGER} = schema, value) when is_integer(value) do
-    with :ok <- validate_numeric_range(schema, value),
-         :ok <- validate_enum(schema, value) do
-      :ok
+    with :ok <- validate_numeric_range(schema, value) do
+      validate_enum(schema, value)
     end
   end
 
@@ -180,9 +178,8 @@ defmodule Altar.ADM.Schema do
     do: {:error, "expected INTEGER, got #{inspect(value)}"}
 
   def validate(%__MODULE__{type: :NUMBER} = schema, value) when is_number(value) do
-    with :ok <- validate_numeric_range(schema, value),
-         :ok <- validate_enum(schema, value) do
-      :ok
+    with :ok <- validate_numeric_range(schema, value) do
+      validate_enum(schema, value)
     end
   end
 
@@ -198,9 +195,8 @@ defmodule Altar.ADM.Schema do
 
   def validate(%__MODULE__{type: :OBJECT} = schema, value) when is_map(value) do
     with :ok <- validate_required_properties(schema, value),
-         :ok <- validate_object_properties(schema, value),
-         :ok <- validate_enum(schema, value) do
-      :ok
+         :ok <- validate_object_properties(schema, value) do
+      validate_enum(schema, value)
     end
   end
 
@@ -209,9 +205,8 @@ defmodule Altar.ADM.Schema do
 
   def validate(%__MODULE__{type: :ARRAY} = schema, value) when is_list(value) do
     with :ok <- validate_array_length(schema, value),
-         :ok <- validate_array_items(schema, value),
-         :ok <- validate_enum(schema, value) do
-      :ok
+         :ok <- validate_array_items(schema, value) do
+      validate_enum(schema, value)
     end
   end
 
@@ -297,16 +292,7 @@ defmodule Altar.ADM.Schema do
         {:ok, nil}
 
       props when is_map(props) ->
-        # Recursively validate property schemas
-        validated =
-          Enum.reduce_while(props, {:ok, %{}}, fn {name, prop_schema}, {:ok, acc} ->
-            case convert_to_schema(prop_schema) do
-              {:ok, schema} -> {:cont, {:ok, Map.put(acc, name, schema)}}
-              {:error, reason} -> {:halt, {:error, "property #{name}: #{reason}"}}
-            end
-          end)
-
-        validated
+        validate_property_schemas(props)
 
       _ ->
         {:error, "properties must be a map"}
@@ -314,6 +300,15 @@ defmodule Altar.ADM.Schema do
   end
 
   defp validate_properties(_attrs, _type), do: {:ok, nil}
+
+  defp validate_property_schemas(props) do
+    Enum.reduce_while(props, {:ok, %{}}, fn {name, prop_schema}, {:ok, acc} ->
+      case convert_to_schema(prop_schema) do
+        {:ok, schema} -> {:cont, {:ok, Map.put(acc, name, schema)}}
+        {:error, reason} -> {:halt, {:error, "property #{name}: #{reason}"}}
+      end
+    end)
+  end
 
   defp validate_required(attrs, :OBJECT) do
     case Map.get(attrs, :required) do
@@ -419,23 +414,29 @@ defmodule Altar.ADM.Schema do
 
   defp validate_object_properties(%{properties: properties}, value) when not is_nil(properties) do
     Enum.reduce_while(value, :ok, fn {key, val}, _acc ->
-      prop_name = to_string(key)
-
-      case Map.get(properties, prop_name) do
-        # Allow additional properties
-        nil ->
-          {:cont, :ok}
-
-        schema ->
-          case validate(schema, val) do
-            :ok -> {:cont, :ok}
-            {:error, reason} -> {:halt, {:error, "property #{prop_name}: #{reason}"}}
-          end
+      case validate_object_property(properties, key, val) do
+        :ok -> {:cont, :ok}
+        {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
   end
 
   defp validate_object_properties(_, _), do: :ok
+
+  defp validate_object_property(properties, key, val) do
+    prop_name = to_string(key)
+
+    case Map.get(properties, prop_name) do
+      nil ->
+        :ok
+
+      schema ->
+        case validate(schema, val) do
+          :ok -> :ok
+          {:error, reason} -> {:error, "property #{prop_name}: #{reason}"}
+        end
+    end
+  end
 
   defp validate_array_length(%{min_items: min}, value) when not is_nil(min) do
     if length(value) >= min do

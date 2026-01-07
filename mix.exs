@@ -13,10 +13,6 @@ defmodule Altar.MixProject do
       deps: deps(),
       dialyzer: dialyzer(),
       aliases: aliases(),
-      preferred_cli_env: [
-        check: :test,
-        "check.ci": :test
-      ],
 
       # Hex / Docs
       name: "Altar",
@@ -31,6 +27,15 @@ defmodule Altar.MixProject do
     [
       extra_applications: [:logger],
       mod: {Altar, []}
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        check: :test,
+        "check.ci": :test
+      ]
     ]
   end
 

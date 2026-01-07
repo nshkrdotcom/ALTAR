@@ -1,7 +1,7 @@
 defmodule Altar.ADM.ToolManifestTest do
   use ExUnit.Case, async: true
 
-  alias Altar.ADM.{ToolManifest, Tool}
+  alias Altar.ADM.{Tool, ToolManifest}
 
   doctest ToolManifest
 

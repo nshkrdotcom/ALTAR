@@ -3,7 +3,7 @@ defmodule Altar.LATER.ExecutorTest do
 
   alias Altar.ADM
   alias Altar.ADM.{FunctionCall, FunctionDeclaration, ToolResult}
-  alias Altar.LATER.{Registry, Executor}
+  alias Altar.LATER.{Executor, Registry}
 
   # Simple tool functions used in tests
   def sum_tool(%{"a" => a, "b" => b}), do: a + b

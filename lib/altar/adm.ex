@@ -8,7 +8,7 @@ defmodule Altar.ADM do
   pass-through helpers here.
   """
 
-  alias Altar.ADM.{FunctionDeclaration, FunctionCall, ToolResult, ToolConfig}
+  alias Altar.ADM.{FunctionCall, FunctionDeclaration, ToolConfig, ToolResult}
 
   @doc """
   Create a new `FunctionDeclaration` via validated constructor.
